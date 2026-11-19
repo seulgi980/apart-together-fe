@@ -1,0 +1,42 @@
+import { cva, type VariantProps } from "class-variance-authority"
+
+const logoVariants = cva("shrink-0", {
+  variants: {
+    size: {
+      md: "size-8",
+      lg: "size-10",
+    },
+  },
+  defaultVariants: { size: "md" },
+})
+
+/**
+ * 따로같이 로고: 지도 핀 하나를 반반 다른 색으로 칠했다 (따로, 그리고 같이).
+ * 앱 아이콘(app/icon.svg)과 같은 모양이고, 색은 팔레트 토큰을 쓴다.
+ */
+export function AppLogo({ size }: VariantProps<typeof logoVariants>) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      role="img"
+      aria-label="따로같이"
+      className={logoVariants({ size })}
+    >
+      <rect width="64" height="64" rx="14" className="fill-brand-500" />
+      {/* 왼쪽 반 */}
+      <path
+       
+        fillRule="evenodd"
+        d="M32 56C26.3 47.4 16 39.2 16 26A16 16 0 0 1 32 10ZM32 20A6 6 0 0 0 32 32Z"
+        className="fill-brand-800"
+      />
+      {/* 오른쪽 반 */}
+      <path
+       
+        fillRule="evenodd"
+        d="M32 56C37.7 47.4 48 39.2 48 26A16 16 0 0 0 32 10ZM32 20A6 6 0 0 1 32 32Z"
+        className="fill-brand-0"
+      />
+    </svg>
+  )
+}

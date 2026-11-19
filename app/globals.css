@@ -1,0 +1,273 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * 디자인 토큰 단일 출처 (ui-spec.md 부록 A).
+ * 색·글자·반경·그림자의 Tailwind 기본값을 전부 지워서 목록 밖 값이 존재하지 않게 한다.
+ */
+@theme static {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
+  /* 폰트 */
+  --font-sans: var(--font-noto), "Noto Sans KR", system-ui, sans-serif;
+
+  /*
+   * 팔레트 ver6 (4색): 노란 기 없는 핑크 한 줄
+   *   #fcf8f8 → 페이지 배경 (100)
+   *   #fbefef → 장소 풀 시트, 안내 배경 (200)
+   *   #f9dfdf → 좋아요 카드의 연한 쪽, 내 말풍선 (300)
+   *   #f5afaf → 주요 버튼, 선택 상태, 좋아요 카드 테두리 (500)
+   * 진한 색이 없어서 글자·핀에 쓰는 진한 단계(550~950)는 #f5afaf를 어둡게 내려 만든다.
+   * 그 밖의 단계는 4색 사이를 섞은 값이다.
+   *
+   * (ver1: #f9fafc / #f6d9d5 / #f7d0cb / #e3e4e6 / #313131)
+   * (ver2: #fdd9d2 / #f8e6e4 / #f8f0e4 / #f5f4f6 / #f5f6f4)
+   * (ver3: #ffbfa7 / #ffcbb9 / #ffc8ca / #ffe5dc / #fff2ed)
+   * (ver4: #fcd2df / #fddbe0 / #fee4e2 / #feede3 / #fff6e4)
+   * (ver5: #ffe7f0 / #cab3bb / #97818a / #67535b / #3a2930)
+   */
+  --color-brand-0: #ffffff;
+  --color-brand-50: #fefbfb;
+  --color-brand-100: #fcf8f8;
+  --color-brand-150: #fbf3f3;
+  --color-brand-200: #fbefef;
+  --color-brand-250: #fae7e7;
+  --color-brand-300: #f9dfdf;
+  --color-brand-350: #f8d3d3;
+  --color-brand-400: #f7c7c7;
+  --color-brand-450: #f6bbbb;
+  --color-brand-500: #f5afaf;
+  --color-brand-550: #d89b9b;
+  --color-brand-600: #bb8787;
+  --color-brand-650: #9e7374;
+  --color-brand-700: #815f60;
+  --color-brand-750: #694f50;
+  --color-brand-800: #544041;
+  --color-brand-850: #433436;
+  --color-brand-900: #33292b;
+  --color-brand-950: #1f191a;
+  --color-brand-1000: #000000;
+
+  /* 기본 테두리·구분선: #fbefef를 어둡게 내린 색 */
+  --color-line: #f0e3e3;
+  /* 패스 카드: 배경색(#fcf8f8)을 어둡게 내려 색을 뺀 듯한 색 */
+  --color-pass-fill: #ebe6e6;
+  /* 패스 카드 테두리: 패스 카드 색을 한 단계 더 어둡게 내린 회색 */
+  --color-pass-line: #d9d2d2;
+  /* 좋아요 카드 테두리: 팔레트의 진한 핑크 */
+  --color-like-line: #f5afaf;
+
+  /*
+   * 상태 색. 팔레트 5색과 그 색을 섞어 만든 단계만 쓴다 (멤버 핀 색만 예외).
+   */
+  --color-like: var(--color-brand-750); /* 좋아요 글자·표시 */
+  --color-like-subtle: var(--color-brand-300); /* 내 말풍선, 좋아요 배지 */
+  --color-split: var(--color-brand-750); /* 의견갈림 점선·글자 */
+  --color-split-subtle: var(--color-brand-150);
+  --color-pass: var(--color-brand-750); /* 패스 글자·채운 버튼 */
+  --color-pass-subtle: var(--color-pass-fill); /* 패스 카드 */
+  --color-private: var(--color-brand-900); /* 나만 배지·글자 (카드 테두리는 미평가 카드와 같다) */
+  --color-private-subtle: var(--color-brand-150);
+  --color-danger: var(--color-brand-900); /* 오류·삭제 */
+  --color-error-text: #c0392b; /* 입력 오류 안내 문구, 안 읽은 채팅 수 배지 (붉은 계열) */
+  --color-danger-subtle: var(--color-brand-200);
+
+  /*
+   * 멤버 색 10종 (멤버 식별 전용). 파스텔 톤이라 글자는 흰색이 아니라 brand-900을 쓴다.
+   * 선(지도 경로, 강조 테두리)처럼 진해야 보이는 곳은 member-strong(같은 색의 진한 버전)을 쓴다.
+   */
+  --color-member-1: #f4b6c2; /* 로즈 */
+  --color-member-2: #f8c4a0; /* 피치 */
+  --color-member-3: #f4de8e; /* 버터 */
+  --color-member-4: #cfe4a2; /* 피스타치오 */
+  --color-member-5: #a8dcc0; /* 민트 */
+  --color-member-6: #a5d9e1; /* 아쿠아 */
+  --color-member-7: #adcbf3; /* 스카이 */
+  --color-member-8: #cab9ef; /* 라벤더 */
+  --color-member-9: #e8b4e1; /* 오키드 */
+  --color-member-10: #ddc8b1; /* 샌드 */
+
+  /* 글자 크기 (모바일 기준값) */
+  --text-display: 24px;
+  --text-display--line-height: 32px;
+  --text-title: 18px;
+  --text-title--line-height: 26px;
+  --text-subtitle: 16px;
+  --text-subtitle--line-height: 24px;
+  --text-body: 14px;
+  --text-body--line-height: 22px;
+  --text-caption: 12px;
+  --text-caption--line-height: 18px;
+  --text-time: 18px;
+  --text-time--line-height: 24px;
+
+  /* 반경 */
+  --radius-sm: 6px; /* 배지 */
+  --radius-md: 8px; /* 버튼, 입력창, 세그먼트 토글 */
+  --radius-lg: 12px; /* 카드 */
+  --radius-xl: 16px; /* 바텀시트, 팝업 */
+  --radius-full: 9999px; /* 칩, 아바타, 스위치 */
+
+  /* 그림자: pop은 팝업·말풍선·떠오른 카드, card는 평소 카드 */
+  --shadow-pop: 0 6px 20px rgb(51 41 43 / 0.16);
+  /* 카드가 바닥에서 살짝 떠 보이게: 아래 그림자 + 윗면의 밝은 선 */
+  --shadow-card:
+    0 1px 2px rgb(51 41 43 / 0.06), 0 8px 16px -8px rgb(51 41 43 / 0.16),
+    inset 0 1px 0 rgb(255 255 255 / 0.75);
+
+  /* 칩 줄을 넘길 때: 끝에서 살짝 넘쳤다가 돌아오는 튕김 */
+  --ease-spring: cubic-bezier(0.22, 1.15, 0.36, 1);
+
+  /* 선택된 카드 강조: 세 번 깜빡인 뒤 멈춘다 */
+  --animate-blink: blink 0.7s ease-in-out 3;
+  @keyframes blink {
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  /* 레이아웃 치수 (웹) */
+  --container-timeline: 960px;
+  --container-detail: 440px;
+  --container-chat: 400px;
+  --container-maplist: 420px;
+}
+
+/* shadcn 의미 토큰 + 멤버 색을 Tailwind 유틸리티로 노출 */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  /* data-member 속성이 정한 현재 멤버 색 (bg-member, border-member, text-member) */
+  --color-member: var(--member);
+  --color-member-strong: var(--member-strong);
+}
+
+/* 웹(lg 이상) 글자 크기 */
+@media (min-width: 1024px) {
+  :root {
+    --text-display: 28px;
+    --text-display--line-height: 36px;
+    --text-title: 20px;
+    --text-title--line-height: 28px;
+    --text-body: 15px;
+    --text-body--line-height: 24px;
+    --text-caption: 13px;
+    --text-time: 20px;
+    --text-time--line-height: 28px;
+  }
+}
+
+/* shadcn 의미 토큰 → 팔레트 연결 (다크 모드 없음) */
+:root {
+  --background: var(--color-brand-100);
+  --foreground: var(--color-brand-900);
+  --card: var(--color-brand-0);
+  --card-foreground: var(--color-brand-900);
+  --popover: var(--color-brand-0);
+  --popover-foreground: var(--color-brand-900);
+  --primary: var(--color-brand-500);
+  --primary-foreground: var(--color-brand-900);
+  --secondary: var(--color-brand-250);
+  --secondary-foreground: var(--color-brand-800);
+  --muted: var(--color-brand-150);
+  --muted-foreground: var(--color-brand-750);
+  --accent: var(--color-brand-250);
+  --accent-foreground: var(--color-brand-900);
+  --destructive: var(--color-danger);
+  --border: var(--color-line);
+  --input: var(--color-brand-600);
+  --ring: var(--color-brand-700);
+
+  /* 탈퇴한 멤버 등 멤버 색이 없을 때의 기본값 */
+  --member: var(--color-brand-600);
+}
+
+/* 멤버 색의 진한 버전: 멤버 색이 정해지는 요소마다 같이 계산된다 */
+:root,
+[data-member] {
+  --member-strong: color-mix(in srgb, var(--member) 55%, var(--color-brand-900));
+}
+
+/* 멤버 색: data-member 속성 → CSS 변수 (이 한 곳에서만 처리) */
+[data-member="1"] { --member: var(--color-member-1); }
+[data-member="2"] { --member: var(--color-member-2); }
+[data-member="3"] { --member: var(--color-member-3); }
+[data-member="4"] { --member: var(--color-member-4); }
+[data-member="5"] { --member: var(--color-member-5); }
+[data-member="6"] { --member: var(--color-member-6); }
+[data-member="7"] { --member: var(--color-member-7); }
+[data-member="8"] { --member: var(--color-member-8); }
+[data-member="9"] { --member: var(--color-member-9); }
+[data-member="10"] { --member: var(--color-member-10); }
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-body text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * 스크롤바: 어디서나 같은 핑크(brand-350) 둥근 막대. 항상 보인다.
+ * ScrollArea(components/ui/scroll-area)의 막대와 색·굵기가 같다.
+ */
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-color: var(--color-brand-350);
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-brand-450);
+}
+/* ::-webkit-scrollbar를 모르는 브라우저(Firefox) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-350) transparent;
+  }
+}
+
+/* 기기 안전영역 (노치, 홈 인디케이터) */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}

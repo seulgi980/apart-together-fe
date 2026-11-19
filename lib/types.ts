@@ -1,0 +1,150 @@
+/** 도메인 타입. 백엔드 API가 붙으면 응답 타입을 여기에 맞춘다. */
+
+export type MemberColor = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+
+export const MEMBER_COLORS: MemberColor[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+export const MAX_MEMBERS = 10
+
+/** 회원 정보 (닉네임, 프로필 사진). 핀 색은 여행방 멤버 정보다. */
+export type User = {
+  id: string
+  /** 내 계정에만 있다 (다른 멤버의 아이디는 받지 않는다) */
+  loginId?: string
+  nickname: string
+  avatarUrl?: string
+}
+
+export type RoomMember = {
+  userId: string
+  color: MemberColor
+}
+
+/** 방을 떠난 멤버: left = 스스로 나감(다시 들어올 수 있음), kicked = 내보내짐(다시 들어올 수 없음) */
+export type FormerMember = {
+  userId: string
+  status: "left" | "kicked"
+}
+
+export type Room = {
+  id: string
+  title: string
+  /** YYYY-MM-DD */
+  startDate: string
+  /** YYYY-MM-DD */
+  endDate: string
+  ownerId: string
+  inviteCode: string
+  members: RoomMember[]
+  /** 방을 떠난 멤버의 기록. 내보내진 멤버의 재참여를 막는 데 쓴다. */
+  formerMembers?: FormerMember[]
+}
+
+/** 화면에서 쓰는 멤버 (회원 정보 + 방 안의 핀 색) */
+export type MemberView = {
+  id: string
+  nickname: string
+  avatarUrl?: string
+  /** 탈퇴한 멤버는 null */
+  color: MemberColor | null
+  isMe: boolean
+}
+
+export type Category =
+  | "restaurant"
+  | "cafe"
+  | "sight"
+  | "stay"
+  | "shopping"
+  | "etc"
+
+export type Scope = "shared" | "private"
+export type Vote = "like" | "pass"
+
+/** 취향 상태 (F3-2) + 나만 카드 */
+export type PlaceStatus = "like" | "split" | "pass" | "unrated" | "private"
+
+export type Reference = {
+  id: string
+  title: string
+  url: string
+  memo?: string
+  addedBy: string
+}
+
+export type Place = {
+  id: string
+  roomId: string
+  /** 구글맵 장소 식별자. 중복 등록·중복 배치 판단 기준 */
+  placeKey: string
+  name: string
+  /** 영어 장소명 (구글에서 받은 값. 없을 수 있다) */
+  nameEn?: string
+  address: string
+  /** 영어 주소 (없을 수 있다) */
+  addressEn?: string
+  /** 카드에 보이는 짧은 지역명 */
+  area: string
+  /** 좌표를 얻지 못한 장소는 null. 지도에 표시하지 않는다. */
+  lat: number | null
+  lng: number | null
+  /** 등록할 때 붙여넣은 구글맵 링크 */
+  sourceUrl: string
+  category: Category
+  memo?: string
+  scope: Scope
+  createdBy: string
+  votes: Record<string, Vote>
+  references: Reference[]
+}
+
+/** 일정의 주인: 공동 일정이거나 멤버의 개인 일정 */
+export type ScheduleOwner = "shared" | (string & {})
+
+export type ScheduleItem = {
+  id: string
+  roomId: string
+  owner: ScheduleOwner
+  /** 1부터 시작 */
+  day: number
+  kind: "place" | "memo"
+  placeId?: string
+  /** 장소 항목의 장소명·카테고리. 남의 나만 카드로 넣은 항목은 카드를 볼 수 없어서 이 값으로 보여준다. */
+  placeName?: string
+  placeCategory?: Category
+  /** 메모 항목의 제목 ("숙소 체크인" 등) */
+  title?: string
+  /** HH:MM. 없으면 시간 미정 */
+  start?: string
+  /** HH:MM. 선택 */
+  end?: string
+  /** 항목에 붙인 메모 */
+  note?: string
+  /** 같은 자리에 놓인 시간 미정 항목끼리의 순서 */
+  order: number
+  /**
+   * 시간 미정 항목이 타임라인에서 놓인 자리: 바로 앞 시간 항목의 시작 시각(분).
+   * -1이면 맨 위, 없으면 맨 아래.
+   */
+  anchor?: number
+  /** 변경 가시화 (F4-17) */
+  changedBy?: string
+  changedAt?: number
+  /** added 추가 · moved Day 이동 · time 시간 변경 · edited 메모 등 내용 수정 */
+  changeType?: "added" | "moved" | "time" | "edited"
+}
+
+export type ChatMessage = {
+  id: string
+  /** 서버의 메시지 번호. 순서 정렬과 이전 메시지 조회에 쓴다. */
+  seq: number
+  roomId: string
+  kind: "user" | "system" | "place"
+  userId?: string
+  text: string
+  /** kind가 place일 때 공유한 장소 카드 */
+  placeId?: string
+  /** 표시용 시각 ("오후 2:10") */
+  time: string
+}
+
+export type PoolFilter = "all" | PlaceStatus | "mine-missing"
