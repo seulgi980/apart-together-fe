@@ -38,7 +38,10 @@ jobs:
           cache: npm
       - run: npm ci
       - name: 타입 검사
-        run: npx tsc --noEmit
+        # LayoutProps 같은 타입은 Next.js가 만들어 주는 파일에 있다. 먼저 만든 뒤 검사한다.
+        run: |
+          npx next typegen
+          npx tsc --noEmit
       - name: 린트
         run: npm run lint
 
