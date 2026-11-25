@@ -27,21 +27,20 @@ import type { Category } from "@/lib/types";
 
 /**
  * 장소 추가 창 (F2-1, F2-2, F2-3, F2-7, F2-8).
- * - 링크 있음: 목록 화면에서 링크를 붙여넣고 [추가]를 누른 경우.
- *   자동으로 채워진 장소가 맞는지 확인하고 등록만 한다 (링크 입력칸 없음).
- * - 링크 없음: 모바일 [+ 장소 추가] 버튼. 창 안에서 링크를 입력한다.
+ * 장소 목록 위의 링크 입력 줄에 구글맵 링크를 붙여넣고 [추가]를 누르면 열린다.
+ * 자동으로 채워진 장소가 맞는지 확인하고 등록만 한다 (창 안에는 링크 입력칸이 없다).
  */
 export function AddPlaceDialog({
   roomId,
   open,
   onOpenChange,
-  initialLink = "",
+  initialLink,
 }: {
   roomId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** 목록의 링크 입력 줄에서 넘어온 링크 */
-  initialLink?: string;
+  initialLink: string;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,7 +66,7 @@ const NOTICE_TEXT: Record<Notice, { title: string; description: string }> = {
   },
   duplicate: {
     title: "이미 등록된 카드예요",
-    description: "같은 장소가 이미 같은 공개 범위로 등록되어 있습니다.",
+    description: "이 방에 같은 장소가 이미 등록되어 있습니다.",
   },
   "resolve-failed": {
     title: "장소 정보를 불러오지 못했어요",
@@ -85,10 +84,8 @@ function AddPlaceForm({
   initialLink: string;
   onDone: () => void;
 }) {
-  /** 링크를 붙여넣고 들어온 경우: 확인하고 등록만 한다 */
-  const confirmOnly = initialLink !== "";
   const { add } = usePlaces(roomId);
-  const [link, setLink] = React.useState(initialLink);
+  const link = initialLink;
   const [resolved, setResolved] = React.useState<ResolvedPlace | null>(null);
   /** 서버가 링크를 풀고 있거나 등록 요청을 처리하는 중 */
   const [busy, setBusy] = React.useState(false);
@@ -121,7 +118,7 @@ function AddPlaceForm({
     if (found.value.category) setCategory(found.value.category);
   }, []);
 
-  // 링크를 붙여넣고 들어온 경우에는 창이 열리자마자 불러온다
+  // 창이 열리자마자 링크의 장소를 불러온다
   const started = React.useRef(false);
   React.useEffect(() => {
     if (!initialLink || started.current) return;
@@ -161,40 +158,9 @@ function AddPlaceForm({
       <DialogHeader>
         <DialogTitle>장소 추가</DialogTitle>
         <DialogDescription>
-          {confirmOnly
-            ? "붙여넣은 링크의 장소가 맞는지 확인하고 등록하세요."
-            : "구글맵에서 공유 링크를 복사해 붙여넣으면 장소명과 주소가 자동으로 채워져요."}
+          붙여넣은 링크의 장소가 맞는지 확인하고 등록하세요.
         </DialogDescription>
       </DialogHeader>
-
-      {!confirmOnly && (
-        <FormField
-          id="place-link"
-          label="구글맵 공유 링크"
-          help="예: https://maps.app.goo.gl/..."
-        >
-          <div className="flex items-center gap-3">
-            <Input
-              id="place-link"
-              inputMode="url"
-              placeholder="구글맵 공유 링크를 붙여넣으세요"
-              value={link}
-              onChange={(event) => {
-                setLink(event.target.value);
-                setResolved(null);
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!link.trim() || busy}
-              onClick={() => void lookUp(link)}
-            >
-              불러오기
-            </Button>
-          </div>
-        </FormField>
-      )}
 
       {resolved && (
         <>

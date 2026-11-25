@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 import { AppHeader } from "@/components/app/app-header";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
@@ -157,7 +157,7 @@ export function PlaceList({
       </div>
 
       <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
-        <div className="p-4 pb-20 lg:p-8">
+        <div className="p-4 lg:p-8">
           {filtered.length === 0 ? (
             <EmptyState
               icon={MapPin}
@@ -191,15 +191,6 @@ export function PlaceList({
           <div ref={sentinelRef} className="h-px" aria-hidden />
         </div>
       </div>
-
-      <Button
-        size="fab"
-        className="absolute right-4 bottom-4 z-10 lg:hidden"
-        onClick={() => setAddState({ open: true, link: "" })}
-      >
-        <Plus />
-        장소 추가
-      </Button>
 
       <AddPlaceDialog
         key={addState.link}
