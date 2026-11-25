@@ -148,6 +148,8 @@ export type ChatMessage = {
   placeId?: string
   /** 표시용 시각 ("오후 2:10") */
   time: string
+  /** 표시용 날짜 ("2026년 11월 25일"). 날짜가 바뀌는 첫 메시지 위에 구분선으로 한 번 보여준다. */
+  date: string
 }
 
 export type PoolFilter = "all" | PlaceStatus | "mine-missing"

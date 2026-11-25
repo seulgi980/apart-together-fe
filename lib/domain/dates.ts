@@ -31,6 +31,11 @@ export function formatPeriod(startDate: string, endDate: string): string {
   return `${sy}.${sm}.${sd} ~ ${end}`
 }
 
+/** 채팅 날짜 구분선용 ("2026년 11월 25일"). 내 기기의 현지 날짜 기준. */
+export function formatChatDate(date: Date): string {
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
+}
+
 /** 채팅 시각 표시용 ("오후 2:10"). 이벤트 핸들러 안에서만 호출한다. */
 export function formatClock(date: Date): string {
   const h = date.getHours()

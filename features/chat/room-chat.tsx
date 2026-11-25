@@ -3,7 +3,11 @@
 import * as React from "react"
 import Link from "next/link"
 
-import { ChatMessage, ChatPlaceCard } from "@/components/app/chat-message"
+import {
+  ChatDateDivider,
+  ChatMessage,
+  ChatPlaceCard,
+} from "@/components/app/chat-message"
 import { ChatPanel } from "@/components/app/chat-panel"
 import {
   Sheet,
@@ -42,39 +46,47 @@ function ChatBody({ roomId }: { roomId: string }) {
       onSend={send}
       attach={<SharePlaceButton places={places} onShare={sharePlace} />}
     >
-      {messages.map((message) => {
+      {messages.map((message, index) => {
+        // 날짜가 바뀌는 첫 메시지 위에만 날짜 구분선을 넣는다 (맨 위 메시지는 항상)
+        const divider =
+          index === 0 || messages[index - 1].date !== message.date ? (
+            <ChatDateDivider key={`date-${message.id}`} date={message.date} />
+          ) : null
         if (message.kind === "system" || !message.userId) {
           return (
-            <ChatMessage key={message.id} variant="system">
-              {message.text}
-            </ChatMessage>
+            <React.Fragment key={message.id}>
+              {divider}
+              <ChatMessage variant="system">{message.text}</ChatMessage>
+            </React.Fragment>
           )
         }
         const shared = places.find((view) => view.place.id === message.placeId)
         return (
-          <ChatMessage
-            key={message.id}
-            variant="user"
-            member={view.getMember(message.userId)}
-            time={message.time}
-          >
-            {message.text}
-            {message.kind === "place" &&
-              (shared ? (
-                <Link
-                  href={`/rooms/${roomId}/places/${shared.place.id}`}
-                  draggable={false}
-                  className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <ChatPlaceCard
-                    name={shared.place.name}
-                    meta={placeMeta(shared.place.category, shared.place.area, shared.place.areaEn)}
-                  />
-                </Link>
-              ) : (
-                <ChatPlaceCard name="삭제된 장소 카드" meta="더 이상 볼 수 없어요" />
-              ))}
-          </ChatMessage>
+          <React.Fragment key={message.id}>
+            {divider}
+            <ChatMessage
+              variant="user"
+              member={view.getMember(message.userId)}
+              time={message.time}
+            >
+              {message.text}
+              {message.kind === "place" &&
+                (shared ? (
+                  <Link
+                    href={`/rooms/${roomId}/places/${shared.place.id}`}
+                    draggable={false}
+                    className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <ChatPlaceCard
+                      name={shared.place.name}
+                      meta={placeMeta(shared.place.category, shared.place.area, shared.place.areaEn)}
+                    />
+                  </Link>
+                ) : (
+                  <ChatPlaceCard name="삭제된 장소 카드" meta="더 이상 볼 수 없어요" />
+                ))}
+            </ChatMessage>
+          </React.Fragment>
         )
       })}
     </ChatPanel>

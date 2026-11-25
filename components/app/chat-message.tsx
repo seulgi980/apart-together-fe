@@ -74,6 +74,20 @@ export function ChatMessage(props: ChatMessageProps) {
   )
 }
 
+/**
+ * 날짜 구분선: ── 2026년 11월 25일 ──
+ * 그날 첫 메시지 위에 한 번만 보이고, 날짜가 바뀌면 다시 한 번 보인다 (카카오톡처럼).
+ */
+export function ChatDateDivider({ date }: { date: string }) {
+  return (
+    <li className="flex items-center gap-3 py-1" role="separator" aria-label={date}>
+      <span aria-hidden className="h-px flex-1 bg-line" />
+      <span className="shrink-0 text-caption text-brand-750">{date}</span>
+      <span aria-hidden className="h-px flex-1 bg-line" />
+    </li>
+  )
+}
+
 /** 말풍선 안의 장소 카드 공유. 누르면 해당 카드로 이동한다 (F6-7). */
 export function ChatPlaceCard({ name, meta }: { name: string; meta: string }) {
   return (

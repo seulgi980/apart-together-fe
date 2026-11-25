@@ -6,7 +6,7 @@ import type {
   TripDto,
   UserDto,
 } from "@/lib/api/dto"
-import { formatClock } from "@/lib/domain/dates"
+import { formatChatDate, formatClock } from "@/lib/domain/dates"
 import type {
   Category,
   ChatMessage,
@@ -166,5 +166,6 @@ export function toMessage(dto: ChatMessageDto): ChatMessage {
     text: dto.kind === "PLACE" ? "장소 카드를 공유했어요" : dto.content,
     placeId: dto.sharedPlaceId === null ? undefined : String(dto.sharedPlaceId),
     time: formatClock(new Date(dto.createdAt)),
+    date: formatChatDate(new Date(dto.createdAt)),
   }
 }
