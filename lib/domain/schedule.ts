@@ -1,4 +1,12 @@
-import type { ScheduleItem } from "@/lib/types"
+import type { Category, ScheduleItem } from "@/lib/types"
+
+/**
+ * 같은 장소를 한 일정에 넣을 수 있는 횟수 (F4-20).
+ * 숙소는 체크인/체크아웃 때문에 2번, 나머지는 1번. 백엔드 ScheduleService.maxPlacements와 같은 규칙이다.
+ */
+export function maxPlacements(category: Category): number {
+  return category === "stay" ? 2 : 1
+}
 
 export function toMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number)

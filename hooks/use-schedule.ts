@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 
 import { compareNames } from "@/lib/domain/labels"
-import { sortTimeline } from "@/lib/domain/schedule"
+import { maxPlacements, sortTimeline } from "@/lib/domain/schedule"
 import { summarizeVotes, type VoteSummary } from "@/lib/domain/status"
 import { notifyScheduleResult } from "@/lib/notify"
 import { useStore } from "@/lib/store/store"
@@ -22,8 +22,10 @@ export type TimelineEntry = {
 export type PoolEntry = {
   place: Place
   summary: VoteSummary
-  /** 이 일정에 이미 배치된 항목 */
-  placedItem?: ScheduleItem
+  /** 이 일정에 이미 배치된 같은 장소의 항목들 (Day 순) */
+  placedItems: ScheduleItem[]
+  /** 더 배치할 수 있는지. 숙소는 2번, 나머지는 1번까지 (F4-20) */
+  canPlace: boolean
   /** 개인 탭에서 같은 장소의 공동 카드가 있는 나만 카드 (F4-23) */
   alsoShared: boolean
 }
@@ -115,17 +117,23 @@ export function usePool(roomId: string, owner: ScheduleOwner): PoolEntry[] {
         }
         return place.scope === "shared" || place.createdBy === meId
       })
-      .map(({ place, summary }) => ({
-        place,
-        summary,
+      .map(({ place, summary }) => {
         // 배치 여부는 카드가 아니라 장소 기준이다 (F4-20)
-        placedItem: schedule.find((item) => {
-          if (!item.placeId) return false
-          const placed = roomPlaces.find((candidate) => candidate.id === item.placeId)
-          return placed?.placeKey === place.placeKey
-        }),
-        alsoShared: place.scope === "private" && sharedKeys.has(place.placeKey),
-      }))
+        const placedItems = schedule
+          .filter((item) => {
+            if (!item.placeId) return false
+            const placed = roomPlaces.find((candidate) => candidate.id === item.placeId)
+            return placed?.placeKey === place.placeKey
+          })
+          .sort((a, b) => a.day - b.day)
+        return {
+          place,
+          summary,
+          placedItems,
+          canPlace: placedItems.length < maxPlacements(place.category),
+          alsoShared: place.scope === "private" && sharedKeys.has(place.placeKey),
+        }
+      })
       .sort((a, b) => compareNames(a.place.name, b.place.name))
   }, [items, places, rooms, roomId, owner, meId])
 }

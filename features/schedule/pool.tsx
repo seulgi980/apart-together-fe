@@ -97,12 +97,13 @@ function PoolCard({
   onAdd: () => void
   onOpen: () => void
 }) {
-  const placed = entry.placedItem !== undefined
+  // 숙소는 한 번 배치돼도 한 번 더(체크아웃) 배치할 수 있다
+  const placeable = entry.canPlace
   const data: DragData = { type: "pool", entry }
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id: poolDragId(entry.place.id),
     data,
-    disabled: placed,
+    disabled: !placeable,
   })
 
   return (
@@ -110,11 +111,11 @@ function PoolCard({
       ref={setNodeRef}
       entry={entry}
       dimmed={isDragging}
-      className={draggableVariants({ draggable: !placed })}
+      className={draggableVariants({ draggable: placeable })}
       {...{ [DRAG_SOURCE_ATTRIBUTE]: "" }}
       onClick={onOpen}
       action={
-        !placed && (
+        placeable && (
           <Button
             variant="ghost"
             size="icon"
@@ -145,7 +146,7 @@ export function PoolCardView({
   entry: PoolEntry
   action?: React.ReactNode
 }) {
-  const { place, summary, placedItem, alsoShared } = entry
+  const { place, summary, placedItems, canPlace, alsoShared } = entry
   const meta = [
     CATEGORY_LABEL[place.category],
     place.scope === "shared" ? statusText(summary) : null,
@@ -166,10 +167,16 @@ export function PoolCardView({
       <PlaceCard.Footer>
         {place.scope === "private" && <Badge variant="solid">나만</Badge>}
         {alsoShared && <Badge variant="outline">공동에도 있음</Badge>}
-        {placedItem ? (
-          <Badge>배치됨 · Day {placedItem.day}</Badge>
-        ) : (
-          !alsoShared && <Badge variant="like">드래그해서 배치</Badge>
+        {placedItems.length > 0 && (
+          <Badge>
+            배치됨 · {placedItems.map((item) => `Day ${item.day}`).join(", ")}
+          </Badge>
+        )}
+        {placedItems.length === 0 && !alsoShared && (
+          <Badge variant="like">드래그해서 배치</Badge>
+        )}
+        {placedItems.length > 0 && canPlace && (
+          <Badge variant="like">한 번 더 배치 가능</Badge>
         )}
         {action}
       </PlaceCard.Footer>
