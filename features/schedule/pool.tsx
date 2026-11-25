@@ -38,9 +38,15 @@ const cellVariants = cva("", {
   },
 })
 
-/** 풀 카드는 언제나 끌 수 있다 */
-const DRAGGABLE_CLASS =
-  "cursor-grab touch-manipulation transition select-none hover:z-10 hover:scale-102 hover:shadow-pop"
+/** 풀 카드는 언제나 끌 수 있다. 고른 카드는 이미 커져 있으므로 마우스를 올려도 작아지지 않게 hover 확대를 빼 둔다. */
+const draggableVariants = cva("cursor-grab touch-manipulation select-none hover:z-10", {
+  variants: {
+    selected: {
+      true: "",
+      false: "hover:scale-102 hover:shadow-pop",
+    },
+  },
+})
 
 /** 장소 풀의 카드 목록 */
 export function PoolList({
@@ -108,7 +114,7 @@ function PoolCard({
       entry={entry}
       dimmed={isDragging}
       selected={selected}
-      className={DRAGGABLE_CLASS}
+      className={draggableVariants({ selected })}
       {...{ [DRAG_SOURCE_ATTRIBUTE]: "" }}
       onClick={onOpen}
       action={
