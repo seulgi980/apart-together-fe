@@ -265,7 +265,7 @@ export function Styleguide() {
                   <PlaceCard.Header name={`풀 카드 (${status})`} />
                   <PlaceCard.Meta>식당 · 링크 2</PlaceCard.Meta>
                   <PlaceCard.Footer>
-                    <Badge>배치됨 · Day 3</Badge>
+                    <Badge>2번 배치됨</Badge>
                   </PlaceCard.Footer>
                 </PlaceCard>
               </li>

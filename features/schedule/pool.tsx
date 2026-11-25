@@ -38,17 +38,9 @@ const cellVariants = cva("", {
   },
 })
 
-const draggableVariants = cva(
-  "cursor-pointer touch-manipulation transition select-none hover:z-10 hover:scale-102 hover:shadow-pop",
-  {
-  variants: {
-    draggable: {
-      true: "cursor-grab",
-      false: "",
-    },
-  },
-}
-)
+/** 풀 카드는 언제나 끌 수 있다 */
+const DRAGGABLE_CLASS =
+  "cursor-grab touch-manipulation transition select-none hover:z-10 hover:scale-102 hover:shadow-pop"
 
 /** 장소 풀의 카드 목록 */
 export function PoolList({
@@ -97,13 +89,11 @@ function PoolCard({
   onAdd: () => void
   onOpen: () => void
 }) {
-  // 숙소는 한 번 배치돼도 한 번 더(체크아웃) 배치할 수 있다
-  const placeable = entry.canPlace
+  // 같은 카드를 몇 번이든 넣을 수 있어서 언제나 끌 수 있다 (F4-20)
   const data: DragData = { type: "pool", entry }
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id: poolDragId(entry.place.id),
     data,
-    disabled: !placeable,
   })
 
   return (
@@ -111,24 +101,22 @@ function PoolCard({
       ref={setNodeRef}
       entry={entry}
       dimmed={isDragging}
-      className={draggableVariants({ draggable: placeable })}
+      className={DRAGGABLE_CLASS}
       {...{ [DRAG_SOURCE_ATTRIBUTE]: "" }}
       onClick={onOpen}
       action={
-        placeable && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="-my-2 -mr-2 ml-auto"
-            aria-label={`${entry.place.name} 일정에 추가`}
-            onClick={(event) => {
-              event.stopPropagation()
-              onAdd()
-            }}
-          >
-            <Plus />
-          </Button>
-        )
+        <Button
+          variant="ghost"
+          size="icon"
+          className="-my-2 -mr-2 ml-auto"
+          aria-label={`${entry.place.name} 일정에 추가`}
+          onClick={(event) => {
+            event.stopPropagation()
+            onAdd()
+          }}
+        >
+          <Plus />
+        </Button>
       }
       {...listeners}
       {...attributes}
@@ -146,7 +134,7 @@ export function PoolCardView({
   entry: PoolEntry
   action?: React.ReactNode
 }) {
-  const { place, summary, placedItems, canPlace } = entry
+  const { place, summary, placedItems } = entry
   const meta = [
     CATEGORY_LABEL[place.category],
     statusText(summary),
@@ -165,16 +153,10 @@ export function PoolCardView({
       <PlaceCard.Header name={place.name} />
       <PlaceCard.Meta>{meta}</PlaceCard.Meta>
       <PlaceCard.Footer>
-        {placedItems.length > 0 && (
-          <Badge>
-            배치됨 · {placedItems.map((item) => `Day ${item.day}`).join(", ")}
-          </Badge>
-        )}
-        {placedItems.length === 0 && (
+        {placedItems.length > 0 ? (
+          <Badge>{placedItems.length}번 배치됨</Badge>
+        ) : (
           <Badge variant="like">드래그해서 배치</Badge>
-        )}
-        {placedItems.length > 0 && canPlace && (
-          <Badge variant="like">한 번 더 배치 가능</Badge>
         )}
         {action}
       </PlaceCard.Footer>

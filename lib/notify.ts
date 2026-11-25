@@ -37,15 +37,8 @@ export function notifyRejected(result: Extract<ScheduleResult, { ok: false }>) {
   const where = result.conflict.start
     ? `Day ${result.conflict.day} ${result.conflict.start}`
     : `Day ${result.conflict.day}`
-  if (result.reason === "overlap") {
-    toast.error("해당 시간에 이미 일정이 있습니다.", {
-      description: `${where}에 이미 일정이 있습니다.`,
-      duration: REJECT_DURATION,
-    })
-    return
-  }
-  toast.error("해당 카드가 이미 배치되어 있습니다.", {
-    description: `${where}에 이미 카드가 존재합니다.`,
+  toast.error("해당 시간에 이미 일정이 있습니다.", {
+    description: `${where}에 이미 일정이 있습니다.`,
     duration: REJECT_DURATION,
   })
 }

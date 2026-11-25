@@ -53,12 +53,12 @@ import type {
  * 모든 변경은 API를 부른 뒤 서버 응답(과 WebSocket 이벤트)으로 반영한다. 검증도 서버가 한다.
  */
 
-/** 일정 변경 결과 (F4-19, F4-20, F4-22) */
+/** 일정 변경 결과 (F4-19, F4-22) */
 export type ScheduleResult =
   | { ok: true }
   | {
       ok: false
-      reason: "overlap" | "duplicate"
+      reason: "overlap"
       /** 현재 확정된 항목의 위치 */
       conflict: { day: number; start?: string }
     }
@@ -271,14 +271,11 @@ function mergeMessages(current: ChatMessage[], incoming: ChatMessage[]): ChatMes
 }
 
 function scheduleFailure(error: unknown): ScheduleResult {
-  if (
-    error instanceof ApiError &&
-    (error.code === "SCHEDULE_OVERLAP" || error.code === "SCHEDULE_DUPLICATE")
-  ) {
+  if (error instanceof ApiError && error.code === "SCHEDULE_OVERLAP") {
     const conflict = (error.data.conflict ?? {}) as { dayNo?: number; startTime?: string | null }
     return {
       ok: false,
-      reason: error.code === "SCHEDULE_OVERLAP" ? "overlap" : "duplicate",
+      reason: "overlap",
       conflict: { day: conflict.dayNo ?? 0, start: conflict.startTime ?? undefined },
     }
   }

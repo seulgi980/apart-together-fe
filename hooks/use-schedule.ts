@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 
 import { compareNames } from "@/lib/domain/labels"
-import { maxPlacements, sortTimeline } from "@/lib/domain/schedule"
+import { sortTimeline } from "@/lib/domain/schedule"
 import { summarizeVotes, type VoteSummary } from "@/lib/domain/status"
 import { notifyScheduleResult } from "@/lib/notify"
 import { useStore } from "@/lib/store/store"
@@ -22,10 +22,11 @@ export type TimelineEntry = {
 export type PoolEntry = {
   place: Place
   summary: VoteSummary
-  /** 이 일정에 이미 배치된 같은 장소의 항목들 (Day 순) */
+  /**
+   * 이 일정에 이 카드로 넣은 항목들 (Day 순). 같은 카드를 몇 번이든 넣을 수 있다 (F4-20).
+   * 카드를 고르면 이 항목들이 놓인 Day 탭과 타임라인 줄을 강조한다.
+   */
   placedItems: ScheduleItem[]
-  /** 더 배치할 수 있는지. 숙소는 2번, 나머지는 1번까지 (F4-20) */
-  canPlace: boolean
 }
 
 function toEntry(item: ScheduleItem, places: Place[]): TimelineEntry {
@@ -97,28 +98,22 @@ export function usePool(roomId: string, owner: ScheduleOwner): PoolEntry[] {
     if (!room) return []
     const memberIds = room.members.map((member) => member.userId)
     const roomPlaces = places.filter((place) => place.roomId === roomId)
-    const schedule = items.filter(
-      (item) => item.roomId === roomId && item.owner === owner
-    )
+    // 카드 ID -> 이 일정에 그 카드로 넣은 항목들. 한 번만 훑어서 묶어 둔다.
+    const placedByCard = new Map<string, ScheduleItem[]>()
+    for (const item of items) {
+      if (item.roomId !== roomId || item.owner !== owner || !item.placeId) continue
+      const list = placedByCard.get(item.placeId)
+      if (list) list.push(item)
+      else placedByCard.set(item.placeId, [item])
+    }
     return roomPlaces
       .map((place) => ({ place, summary: summarizeVotes(place, memberIds) }))
       .filter(({ summary }) => owner !== "shared" || summary.status !== "pass")
-      .map(({ place, summary }) => {
-        // 배치 여부는 카드가 아니라 장소 기준이다 (F4-20)
-        const placedItems = schedule
-          .filter((item) => {
-            if (!item.placeId) return false
-            const placed = roomPlaces.find((candidate) => candidate.id === item.placeId)
-            return placed?.placeKey === place.placeKey
-          })
-          .sort((a, b) => a.day - b.day)
-        return {
-          place,
-          summary,
-          placedItems,
-          canPlace: placedItems.length < maxPlacements(place.category),
-        }
-      })
+      .map(({ place, summary }) => ({
+        place,
+        summary,
+        placedItems: [...(placedByCard.get(place.id) ?? [])].sort((a, b) => a.day - b.day),
+      }))
       .sort((a, b) => compareNames(a.place.name, b.place.name))
   }, [items, places, rooms, roomId, owner])
 }
