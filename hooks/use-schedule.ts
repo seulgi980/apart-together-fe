@@ -29,9 +29,9 @@ export type PoolEntry = {
   placedItems: ScheduleItem[]
 }
 
-function toEntry(item: ScheduleItem, places: Place[]): TimelineEntry {
+function toEntry(item: ScheduleItem, placeById: Map<string, Place>): TimelineEntry {
   if (item.kind === "memo") return { item, name: item.title ?? "메모" }
-  const place = places.find((candidate) => candidate.id === item.placeId)
+  const place = item.placeId ? placeById.get(item.placeId) : undefined
   // 카드를 아직 못 받았거나 지워졌으면 항목에 실려 온 장소명·카테고리로 보여준다.
   return {
     item,
@@ -78,8 +78,9 @@ export function useTimeline(roomId: string, owner: ScheduleOwner, day: number) {
     const dayItems = items.filter(
       (item) => item.roomId === roomId && item.owner === owner && item.day === day
     )
+    const placeById = new Map(places.map((place) => [place.id, place]))
     // 시간 항목과 시간 미정 항목이 섞인, 화면에 보이는 순서 그대로의 한 줄
-    return sortTimeline(dayItems).map((item) => toEntry(item, places))
+    return sortTimeline(dayItems).map((item) => toEntry(item, placeById))
   }, [items, places, roomId, owner, day])
 }
 

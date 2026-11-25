@@ -36,6 +36,9 @@ function ChatBody({ roomId }: { roomId: string }) {
     markRead()
   }, [markRead, lastSeq])
 
+  // 카드 ID -> 카드. 메시지마다 카드 목록을 뒤지지 않게 한 번 만들어 둔다.
+  const placeById = new Map(places.map((placeView) => [placeView.place.id, placeView]))
+
   if (!view) return null
 
   return (
@@ -60,7 +63,7 @@ function ChatBody({ roomId }: { roomId: string }) {
             </React.Fragment>
           )
         }
-        const shared = places.find((view) => view.place.id === message.placeId)
+        const shared = message.placeId ? placeById.get(message.placeId) : undefined
         return (
           <React.Fragment key={message.id}>
             {divider}

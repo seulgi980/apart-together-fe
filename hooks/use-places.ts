@@ -29,14 +29,19 @@ export function usePlaces(roomId: string) {
     const room = rooms.find((candidate) => candidate.id === roomId)
     if (!room) return []
     const memberIds = room.members.map((member) => member.userId)
+    // 카드 ID -> 공동 일정에 처음 놓인 항목. 일정을 한 번만 훑어서 만들어 두고 꺼내 쓴다.
+    const firstShared = new Map<string, ScheduleItem>()
+    for (const item of allItems) {
+      if (item.owner === "shared" && item.placeId && !firstShared.has(item.placeId)) {
+        firstShared.set(item.placeId, item)
+      }
+    }
     return allPlaces
       .filter((place) => place.roomId === roomId)
       .map((place) => ({
         place,
         summary: summarizeVotes(place, memberIds),
-        sharedItem: allItems.find(
-          (item) => item.owner === "shared" && item.placeId === place.id
-        ),
+        sharedItem: firstShared.get(place.id),
       }))
       // 카드는 언제나 이름 가나다순. 새 카드도 제 자리에 들어간다.
       .sort((a, b) => compareNames(a.place.name, b.place.name))
