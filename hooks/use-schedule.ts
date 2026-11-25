@@ -135,6 +135,23 @@ export function usePickedDays(roomId: string, owner: ScheduleOwner): Set<number>
   }, [items, pickedId, roomId, owner])
 }
 
+/**
+ * 연속 클릭 막기. 같은 요청(key)이 아직 응답을 받지 못했으면 다시 보내지 않는다.
+ * debounce(멈출 때까지 기다렸다 한 번)나 throttle(정해진 시간에 한 번)과 달리,
+ * 기다리는 시간 없이 첫 클릭은 바로 보내고 "응답이 올 때까지"만 막는다.
+ */
+const inFlight = new Set<string>()
+
+async function once(key: string, run: () => Promise<boolean>): Promise<boolean> {
+  if (inFlight.has(key)) return false
+  inFlight.add(key)
+  try {
+    return await run()
+  } finally {
+    inFlight.delete(key)
+  }
+}
+
 /** 일정 변경. 결과에 따라 "변경되었습니다" 또는 거절 메시지를 띄운다. */
 export function useScheduleActions(roomId: string, owner: ScheduleOwner) {
   return useMemo(() => {
@@ -146,12 +163,15 @@ export function useScheduleActions(roomId: string, owner: ScheduleOwner) {
         day: number,
         at?: { index: number; start?: string; end?: string }
       ) {
-        return notifyScheduleResult(
-          await store.placeItem({ roomId, owner, day, placeId, ...at })
+        // [+] 버튼을 빠르게 두 번 눌러도 같은 카드가 두 번 들어가지 않게 한다
+        return once(`place:${roomId}:${owner}:${placeId}`, async () =>
+          notifyScheduleResult(await store.placeItem({ roomId, owner, day, placeId, ...at }))
         )
       },
       async addMemo(input: { day: number; title: string; start?: string; end?: string }) {
-        return notifyScheduleResult(await store.addMemoItem({ roomId, owner, ...input }))
+        return once(`memo:${roomId}:${owner}`, async () =>
+          notifyScheduleResult(await store.addMemoItem({ roomId, owner, ...input }))
+        )
       },
       async update(
         itemId: string,
