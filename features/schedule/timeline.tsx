@@ -14,7 +14,7 @@ import type { TimelineEntry } from "@/hooks/use-schedule"
 const areaVariants = cva("absolute inset-x-0 top-0 p-2", {
   variants: {
     snap: {
-      collapsed: "bottom-46 lg:bottom-50",
+      collapsed: "bottom-56",
       expanded: "bottom-7/10",
     },
   },

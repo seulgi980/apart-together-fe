@@ -29,8 +29,8 @@ const cardVariants = cva(
     size: {
       /** 장소 목록 카드 */
       list: "h-full gap-3 p-4 hover:scale-102 hover:shadow-pop lg:p-5",
-      /** 장소 풀 카드 */
-      compact: "h-full gap-1 p-3",
+      /** 장소 풀 카드. 패널을 줄여도 카드가 눌려 글자와 배지가 겹치지 않게 최소 높이를 고정한다 (112px) */
+      compact: "h-full min-h-28 gap-1 p-3",
     },
     selected: {
       /* 선택된 카드: 핫핑크 테두리 + 바깥 빛으로 커지며 떠오른다. 오른쪽 위에 "선택됨" 배지가 붙는다. */

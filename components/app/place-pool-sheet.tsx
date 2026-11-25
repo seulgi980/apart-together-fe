@@ -15,13 +15,16 @@ import { Button } from "@/components/ui/button"
  */
 export type PoolSnap = "collapsed" | "expanded"
 
-/** 패널 높이: 줄임은 모바일 184 / 웹 200, 펼침은 영역 높이의 70% */
+/**
+ * 패널 높이: 줄임은 224(손잡이 + 필터 줄 + 카드 한 줄이 다 들어가는 높이), 펼침은 영역 높이의 70%.
+ * 줄임 높이를 바꾸면 timeline.tsx의 아래 여백(bottom-56)도 같이 바꾼다.
+ */
 const panelVariants = cva(
   "absolute inset-x-0 bottom-0 z-30 flex min-h-0 flex-col rounded-t-xl border-t border-brand-500 bg-brand-200 text-body text-brand-900",
   {
     variants: {
       snap: {
-        collapsed: "h-46 lg:h-50",
+        collapsed: "h-56",
         expanded: "h-7/10",
       },
       disabled: {
