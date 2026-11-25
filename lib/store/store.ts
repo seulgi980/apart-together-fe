@@ -147,6 +147,8 @@ type TransientState = {
    * 채팅 공유([+] 목록, 상세의 "채팅에 공유")는 알림이 뜬 뒤에만 할 수 있게 이 카드들을 숨긴다.
    */
   pendingPlaceIds: string[]
+  /** 방마다 서버에 "여기까지 읽었다"고 알린 마지막 메시지 번호 (같은 읽음 요청을 반복하지 않게) */
+  readSeq: Record<string, number>
   /** 일정 화면에서 상세 패널로 열어 둔 장소 */
   schedulePlaceId: string | null
   /**
@@ -445,6 +447,7 @@ export const useStore = create<Store>()(
         mapFocusPlaceId: null,
         focusItemId: null,
         pendingPlaceIds: [],
+        readSeq: {},
         schedulePlaceId: null,
         poolSelectedId: null,
         scheduleFront: "chat",
@@ -918,11 +921,29 @@ export const useStore = create<Store>()(
           }
         },
 
+        /**
+         * 채팅창이 열려 있는 동안 보인 메시지를 읽음 처리한다 (카카오톡과 같은 규칙).
+         * 화면의 안 읽은 수가 0이어도, 마지막으로 알린 뒤 새 메시지가 왔으면 서버에 알린다.
+         * (내가 만든 시스템 메시지처럼 화면에서는 세지 않아도 서버는 안 읽음으로 세는 메시지가 있다)
+         */
         markRead: async (roomId) => {
-          if (!get().unread[roomId]) return
-          set((state) => ({ unread: { ...state.unread, [roomId]: 0 } }))
+          const state = get()
+          let last = 0
+          for (const message of state.messages) {
+            if (message.roomId === roomId && message.seq > last) last = message.seq
+          }
+          const sent = state.readSeq[roomId] ?? 0
+          if (!state.unread[roomId] && last <= sent) return
+          set((current) => ({
+            unread: { ...current.unread, [roomId]: 0 },
+            readSeq: { ...current.readSeq, [roomId]: Math.max(sent, last) },
+          }))
           try {
-            await api("POST", `/api/trips/${roomId}/chat/read`, {})
+            await api(
+              "POST",
+              `/api/trips/${roomId}/chat/read`,
+              last > 0 ? { lastReadMessageId: last } : {}
+            )
           } catch (error) {
             handleFailure(roomId, error)
           }

@@ -26,9 +26,11 @@ function ChatBody({ roomId }: { roomId: string }) {
   const { messages, hasOlder, send, sharePlace, loadOlder, markRead } =
     useChat(roomId)
 
+  // 열려 있는 동안 새 메시지가 오면(내 시스템 메시지 포함) 마지막 메시지까지 바로 읽음 처리한다
+  const lastSeq = messages.length > 0 ? messages[messages.length - 1].seq : 0
   React.useEffect(() => {
     markRead()
-  }, [markRead, messages.length])
+  }, [markRead, lastSeq])
 
   if (!view) return null
 
