@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { PlaceView } from "@/hooks/use-places"
 import { placeMeta } from "@/lib/domain/labels"
+import { useStore } from "@/lib/store/store"
 
 /**
  * 채팅 입력창 왼쪽의 [+] 버튼. 누르면 입력창 위로 장소 카드 목록이 뜨고,
  * 카드를 고르면 채팅에 그 장소 카드가 올라간다 (F6-7).
+ * 채팅에 "장소 카드를 추가했습니다" 알림이 뜬 카드만 보여준다. (알림보다 카드가 먼저 공유되지 않게)
  */
 export function SharePlaceButton({
   places,
@@ -22,10 +24,13 @@ export function SharePlaceButton({
 }) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
+  const pending = useStore((state) => state.pendingPlaceIds)
 
   const keyword = query.trim().toLowerCase()
   const candidates = places.filter(
-    ({ place }) => keyword === "" || place.name.toLowerCase().includes(keyword)
+    ({ place }) =>
+      !pending.includes(place.id) &&
+      (keyword === "" || place.name.toLowerCase().includes(keyword))
   )
 
   return (

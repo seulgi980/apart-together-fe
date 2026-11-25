@@ -142,6 +142,11 @@ type TransientState = {
   mapFocusPlaceId: string | null
   /** [일정으로 이동]으로 넘어와 잠깐 강조할 일정 항목 */
   focusItemId: string | null
+  /**
+   * 새로 받은 카드 중 채팅의 "장소 카드를 추가했습니다" 알림이 아직 안 온 카드.
+   * 채팅 공유([+] 목록, 상세의 "채팅에 공유")는 알림이 뜬 뒤에만 할 수 있게 이 카드들을 숨긴다.
+   */
+  pendingPlaceIds: string[]
   /** 일정 화면에서 상세 패널로 열어 둔 장소 */
   schedulePlaceId: string | null
   /**
@@ -222,6 +227,9 @@ type Actions = {
 }
 
 export type Store = DataState & ViewState & TransientState & Actions
+
+/** 카드 등록 알림을 기다리는 최대 시간. 지나면 알림이 안 와도 채팅 공유를 풀어 준다. */
+const PENDING_TIMEOUT_MS = 5000
 
 const DEFAULT_CONFIG: AppConfig = {
   maxMembers: 10,
@@ -361,6 +369,24 @@ export const useStore = create<Store>()(
         }
       }
 
+      /** 알림이 안 온 새 카드면 채팅 공유를 잠시 막는다 (알림이 이미 와 있으면 그대로 둔다) */
+      const markPending = (placeId: string) => {
+        const announced = get().messages.some(
+          (message) => message.kind === "system" && message.placeId === placeId
+        )
+        if (announced || get().pendingPlaceIds.includes(placeId)) return
+        set((state) => ({ pendingPlaceIds: [...state.pendingPlaceIds, placeId] }))
+        // 실시간 연결이 끊겨 알림을 못 받는 경우에도 계속 막히지 않게 잠시 뒤 풀어 준다
+        window.setTimeout(() => clearPending([placeId]), PENDING_TIMEOUT_MS)
+      }
+
+      const clearPending = (placeIds: string[]) =>
+        set((state) =>
+          state.pendingPlaceIds.some((id) => placeIds.includes(id))
+            ? { pendingPlaceIds: state.pendingPlaceIds.filter((id) => !placeIds.includes(id)) }
+            : {}
+        )
+
       const roomOfPlace = (placeId: string) =>
         get().places.find((place) => place.id === placeId)?.roomId
 
@@ -418,6 +444,7 @@ export const useStore = create<Store>()(
         pendingInvite: null,
         mapFocusPlaceId: null,
         focusItemId: null,
+        pendingPlaceIds: [],
         schedulePlaceId: null,
         poolSelectedId: null,
         scheduleFront: "chat",
@@ -564,6 +591,10 @@ export const useStore = create<Store>()(
                 chat.messages.map(toMessage)
               ),
               hasOlder: { ...state.hasOlder, [roomId]: chat.hasMore },
+              // 서버에서 새로 받은 카드는 알림이 이미 저장된 뒤다
+              pendingPlaceIds: state.pendingPlaceIds.filter(
+                (id) => !places.some((place) => String(place.id) === id)
+              ),
               presence: { ...state.presence, [roomId]: toPresence(presence) },
             }))
           } catch (error) {
@@ -685,6 +716,8 @@ export const useStore = create<Store>()(
         addPlace: async (roomId, draft) => {
           try {
             const dto = await api<PlaceDto>("POST", `/api/trips/${roomId}/places`, placeBody(draft))
+            // 응답이 채팅 알림(WebSocket)보다 먼저 올 수 있다. 알림이 올 때까지 채팅 공유를 막는다.
+            markPending(String(dto.id))
             putPlace(dto)
             return { ok: true, id: String(dto.id) }
           } catch (error) {
@@ -902,6 +935,8 @@ export const useStore = create<Store>()(
           switch (event.type) {
             case "CHAT_MESSAGE": {
               const message = toMessage(event.payload)
+              // 카드 등록 알림이 왔으니 그 카드를 채팅에 공유할 수 있다
+              if (message.kind === "system" && message.placeId) clearPending([message.placeId])
               set((state) => {
                 const known = state.messages.some((candidate) => candidate.id === message.id)
                 // 내가 보낸 메시지와 내가 일정을 바꿔 생긴 시스템 메시지는 안 읽은 수에 넣지 않는다
@@ -928,9 +963,13 @@ export const useStore = create<Store>()(
               }))
               break
             }
-            case "PLACE_UPSERTED":
+            case "PLACE_UPSERTED": {
+              // 처음 보는 카드면 등록된 것이다. (서버는 알림을 먼저 보내지만 순서를 한 번 더 지킨다)
+              const placeId = String(event.payload.id)
+              if (!get().places.some((place) => place.id === placeId)) markPending(placeId)
               putPlace(event.payload)
               break
+            }
             case "PLACE_DELETED": {
               const placeId = String(event.payload.placeId)
               const removed = new Set(event.payload.removedItemIds.map(String))

@@ -78,6 +78,8 @@ export function PlaceDetail({
   const chat = useChat(roomId)
   const chatToggle = useChatToggle(roomId)
 
+  // 채팅에 등록 알림이 아직 안 뜬 새 카드는 잠시 공유할 수 없다
+  const sharePending = useStore((state) => state.pendingPlaceIds.includes(placeId))
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [referenceForm, setReferenceForm] = React.useState<{
@@ -151,6 +153,7 @@ export function PlaceDetail({
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem
+                  disabled={sharePending}
                   onSelect={() => {
                     chat.sharePlace(place.id)
                     chatToggle.show()

@@ -141,7 +141,10 @@ export type ChatMessage = {
   kind: "user" | "system" | "place"
   userId?: string
   text: string
-  /** kind가 place일 때 공유한 장소 카드 */
+  /**
+   * kind가 place일 때 공유한 장소 카드.
+   * kind가 system이면 "OO님이 XX 장소 카드를 추가했습니다." 알림이 가리키는 카드 (카드 등록 알림)
+   */
   placeId?: string
   /** 표시용 시각 ("오후 2:10") */
   time: string
