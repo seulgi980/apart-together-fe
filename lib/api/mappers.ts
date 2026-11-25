@@ -115,6 +115,7 @@ export function toPlace(dto: PlaceDto): Place {
     address: dto.address ?? "",
     addressEn: dto.addressEn ?? undefined,
     area: dto.area ?? "",
+    areaEn: dto.areaEn ?? undefined,
     lat: dto.latitude,
     lng: dto.longitude,
     sourceUrl: dto.googleMapsUrl,

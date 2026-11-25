@@ -66,7 +66,7 @@ function ChatBody({ roomId }: { roomId: string }) {
                 >
                   <ChatPlaceCard
                     name={shared.place.name}
-                    meta={placeMeta(shared.place.category, shared.place.area)}
+                    meta={placeMeta(shared.place.category, shared.place.area, shared.place.areaEn)}
                   />
                 </Link>
               ) : (

@@ -59,9 +59,23 @@ export function isHttpUrl(url: string): boolean {
   }
 }
 
-/** 카드의 보조 문구: "관광 · 아사쿠사". 지역명을 얻지 못한 장소는 카테고리만 보여준다. */
-export function placeMeta(category: Category, area: string): string {
-  return area ? `${CATEGORY_LABEL[category]} · ${area}` : CATEGORY_LABEL[category]
+/**
+ * 지역명을 "영어 (한국어)"로 통일한다: "Asakusa (아사쿠사)".
+ * 둘 중 하나만 있거나 둘이 같으면 있는 값만 보여준다. (영어 지역명이 없는 예전 카드는 area만)
+ */
+export function formatArea(area: string, areaEn?: string): string {
+  const korean = area.trim()
+  const english = areaEn?.trim() ?? ""
+  if (english && korean && english.toLowerCase() !== korean.toLowerCase()) {
+    return `${english} (${korean})`
+  }
+  return english || korean
+}
+
+/** 카드의 보조 문구: "관광 · Asakusa (아사쿠사)". 지역명을 얻지 못한 장소는 카테고리만 보여준다. */
+export function placeMeta(category: Category, area: string, areaEn?: string): string {
+  const where = formatArea(area, areaEn)
+  return where ? `${CATEGORY_LABEL[category]} · ${where}` : CATEGORY_LABEL[category]
 }
 
 /** 이름 가나다순 비교 (장소 카드, 장소 풀 카드 정렬) */

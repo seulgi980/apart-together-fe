@@ -81,8 +81,10 @@ export type Place = {
   address: string
   /** 영어 주소 (없을 수 있다) */
   addressEn?: string
-  /** 카드에 보이는 짧은 지역명 */
+  /** 카드에 보이는 짧은 지역명 (한국어. 구글에 한국어가 없으면 영어일 수 있다) */
   area: string
+  /** 영어 지역명 (없을 수 있다). 화면은 "영어 (한국어)"로 보여준다 (formatArea) */
+  areaEn?: string
   /** 좌표를 얻지 못한 장소는 null. 지도에 표시하지 않는다. */
   lat: number | null
   lng: number | null

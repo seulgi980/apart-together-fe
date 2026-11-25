@@ -71,6 +71,8 @@ export type PlaceDto = {
   /** 영어 주소. 없으면 null */
   addressEn: string | null
   area: string | null
+  /** 영어 지역명. 없으면 null */
+  areaEn: string | null
   latitude: number | null
   longitude: number | null
   googleMapsUrl: string
@@ -90,6 +92,8 @@ export type ResolvedPlaceDto = {
   /** 영어 주소. 없으면 null */
   addressEn: string | null
   area: string | null
+  /** 영어 지역명. 없으면 null */
+  areaEn: string | null
   latitude: number | null
   longitude: number | null
   googleMapsUrl: string

@@ -144,6 +144,7 @@ function AddPlaceForm({
       address: address.trim(),
       addressEn: resolved.addressEn,
       area: resolved.area,
+      areaEn: resolved.areaEn,
       lat: resolved.lat,
       lng: resolved.lng,
       sourceUrl: link.trim(),

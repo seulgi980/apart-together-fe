@@ -83,6 +83,8 @@ export type PlaceDraft = {
   /** 영어 주소 (없을 수 있다) */
   addressEn?: string
   area: string
+  /** 영어 지역명 (없을 수 있다) */
+  areaEn?: string
   lat: number | null
   lng: number | null
   sourceUrl: string
@@ -297,6 +299,7 @@ function placeBody(draft: PlaceDraft) {
     address: draft.address || null,
     addressEn: draft.addressEn || null,
     area: draft.area || null,
+    areaEn: draft.areaEn || null,
     latitude: draft.lat,
     longitude: draft.lng,
     googleMapsUrl: draft.sourceUrl,

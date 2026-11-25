@@ -80,7 +80,7 @@ export function SharePlaceButton({
                       {place.name}
                     </span>
                     <span className="truncate text-caption font-normal text-brand-750">
-                      {placeMeta(place.category, place.area)}
+                      {placeMeta(place.category, place.area, place.areaEn)}
                     </span>
                   </span>
                 </Button>

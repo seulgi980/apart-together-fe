@@ -10,7 +10,7 @@ import { VoteAvatars } from "@/components/app/vote-avatars"
 import { VoteButtons } from "@/components/app/vote-buttons"
 import { Badge } from "@/components/ui/badge"
 import type { PlaceView } from "@/hooks/use-places"
-import { CATEGORY_LABEL } from "@/lib/domain/labels"
+import { placeMeta } from "@/lib/domain/labels"
 import type { MemberView, Vote } from "@/lib/types"
 
 /** 장소 목록의 카드 한 장 */
@@ -30,7 +30,6 @@ export function PlaceListCard({
   onVote: (vote: Vote) => void
 }) {
   const { place, summary } = view
-  const category = CATEGORY_LABEL[place.category]
 
   // 선택된 카드(채팅에서 눌러 넘어온 카드 등)가 화면 밖에 있으면 화면 안으로 끌어온다
   const cardRef = React.useRef<HTMLElement>(null)
@@ -64,7 +63,7 @@ export function PlaceListCard({
             }
           />
           <PlaceCard.Meta>
-            {place.area ? `${category} · ${place.area}` : category}
+            {placeMeta(place.category, place.area, place.areaEn)}
             {summary.status === "pass" && " · 일정 장소 풀에서 제외됨"}
           </PlaceCard.Meta>
           <PlaceCard.Votes>

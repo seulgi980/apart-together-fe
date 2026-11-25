@@ -13,6 +13,8 @@ export type ResolvedPlace = {
   /** 영어 주소 (없을 수 있다) */
   addressEn?: string
   area: string
+  /** 영어 지역명 (없을 수 있다) */
+  areaEn?: string
   /** 구글이 좌표를 주지 않은 장소는 null (지도에 표시하지 않는다) */
   lat: number | null
   lng: number | null
@@ -67,6 +69,7 @@ function toResolved(dto: ResolvedPlaceDto): ResolvedPlace {
     address: dto.address ?? "",
     addressEn: dto.addressEn ?? undefined,
     area: dto.area ?? "",
+    areaEn: dto.areaEn ?? undefined,
     lat: dto.latitude,
     lng: dto.longitude,
     category: dto.category ? toCategory(dto.category) : undefined,
