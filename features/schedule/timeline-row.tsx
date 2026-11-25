@@ -65,6 +65,11 @@ const cardVariants = cva(
         true: "animate-pulse border-brand-700 ring-3 ring-brand-700",
         false: "",
       },
+      /** 장소 풀에서 고른 카드로 넣은 항목: 연한 핫핑크 테두리가 커졌다 작아졌다 한다 */
+      picked: {
+        true: "border-select-soft outline-2 outline-offset-1 outline-select-soft animate-pulse-ring motion-reduce:animate-none",
+        false: "",
+      },
     },
   }
 )
@@ -184,6 +189,10 @@ function RowBody({
     />
   )
 
+  // 장소 풀에서 고른 카드로 넣은 항목
+  const picked = useStore(
+    (state) => state.poolSelectedId !== null && state.poolSelectedId === item.placeId
+  )
   // [일정으로 이동]으로 넘어온 항목: 화면 안으로 끌어오고 잠깐 강조한다
   const focused = useStore((state) => state.focusItemId === item.id)
   const nodeRef = React.useRef<HTMLLIElement | null>(null)
@@ -215,7 +224,7 @@ function RowBody({
         onClick={() => onEditTime(entry)}
       />
       <TimelineItem.Rail />
-      <TimelineItem.Card className={cardVariants({ focused })}>
+      <TimelineItem.Card className={cardVariants({ focused, picked: picked && !focused })}>
         {handle}
         {canOpen ? (
           <button

@@ -46,14 +46,17 @@ const DRAGGABLE_CLASS =
 export function PoolList({
   entries,
   snap,
+  selectedId,
   onAdd,
   onOpen,
 }: {
   entries: PoolEntry[]
   snap: PoolSnap
+  /** 골라 둔 카드 (선택 표시) */
+  selectedId: string | null
   /** + 버튼: 드래그의 보조 수단 (F4-5) */
   onAdd: (entry: PoolEntry) => void
-  /** 카드를 누르면 장소 상세를 연다 */
+  /** 카드를 누르면 고르면서 장소 상세를 연다. 고른 카드를 다시 누르면 풀린다. */
   onOpen: (entry: PoolEntry) => void
 }) {
   if (entries.length === 0) {
@@ -71,6 +74,7 @@ export function PoolList({
         <li key={entry.place.id} className={cellVariants({ snap })}>
           <PoolCard
             entry={entry}
+            selected={entry.place.id === selectedId}
             onAdd={() => onAdd(entry)}
             onOpen={() => onOpen(entry)}
           />
@@ -82,10 +86,12 @@ export function PoolList({
 
 function PoolCard({
   entry,
+  selected,
   onAdd,
   onOpen,
 }: {
   entry: PoolEntry
+  selected: boolean
   onAdd: () => void
   onOpen: () => void
 }) {
@@ -101,6 +107,7 @@ function PoolCard({
       ref={setNodeRef}
       entry={entry}
       dimmed={isDragging}
+      selected={selected}
       className={DRAGGABLE_CLASS}
       {...{ [DRAG_SOURCE_ATTRIBUTE]: "" }}
       onClick={onOpen}

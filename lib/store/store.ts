@@ -142,6 +142,11 @@ type TransientState = {
   focusItemId: string | null
   /** 일정 화면에서 상세 패널로 열어 둔 장소 */
   schedulePlaceId: string | null
+  /**
+   * 장소 풀에서 골라 둔 카드. 고른 카드는 선택 표시가 되고, 그 카드가 놓인 Day 탭과 일정 줄이 강조된다.
+   * 고르면 상세 패널도 함께 열리고, 다시 누르거나 상세를 닫으면 풀린다.
+   */
+  poolSelectedId: string | null
   /** 웹 일정 화면 오른쪽 자리에 채팅과 장소 상세가 둘 다 열려 있을 때, 나중에 연 쪽 (그쪽을 보여준다) */
   scheduleFront: "chat" | "place"
 }
@@ -210,6 +215,8 @@ type Actions = {
   setMapFocus: (placeId: string | null) => void
   setFocusItem: (itemId: string | null) => void
   setSchedulePlace: (placeId: string | null) => void
+  /** 장소 풀 카드를 누를 때: 고르면서 상세를 열고, 이미 고른 카드면 풀면서 상세를 닫는다 */
+  togglePoolPlace: (placeId: string) => void
 }
 
 export type Store = DataState & ViewState & TransientState & Actions
@@ -409,6 +416,7 @@ export const useStore = create<Store>()(
         mapFocusPlaceId: null,
         focusItemId: null,
         schedulePlaceId: null,
+        poolSelectedId: null,
         scheduleFront: "chat",
 
         bootstrap: async () => {
@@ -929,6 +937,7 @@ export const useStore = create<Store>()(
                   (item) => !removed.has(item.id) && item.placeId !== placeId
                 ),
                 schedulePlaceId: state.schedulePlaceId === placeId ? null : state.schedulePlaceId,
+                poolSelectedId: state.poolSelectedId === placeId ? null : state.poolSelectedId,
               }))
               break
             }
@@ -1031,11 +1040,20 @@ export const useStore = create<Store>()(
         setChatSheetOpen: (open) => set({ chatSheetOpen: open }),
         setMapFocus: (placeId) => set({ mapFocusPlaceId: placeId }),
         setFocusItem: (itemId) => set({ focusItemId: itemId }),
+        // 다른 장소의 상세를 열거나 상세를 닫으면 풀에서 고른 카드도 풀린다
         setSchedulePlace: (placeId) =>
-          set(
-            placeId
-              ? { schedulePlaceId: placeId, scheduleFront: "place" }
-              : { schedulePlaceId: null }
+          set((state) => ({
+            ...(placeId
+              ? { schedulePlaceId: placeId, scheduleFront: "place" as const }
+              : { schedulePlaceId: null }),
+            poolSelectedId:
+              placeId !== null && placeId === state.poolSelectedId ? state.poolSelectedId : null,
+          })),
+        togglePoolPlace: (placeId) =>
+          set((state) =>
+            state.poolSelectedId === placeId
+              ? { poolSelectedId: null, schedulePlaceId: null }
+              : { poolSelectedId: placeId, schedulePlaceId: placeId, scheduleFront: "place" }
           ),
       }
     },

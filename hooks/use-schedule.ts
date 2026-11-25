@@ -118,6 +118,22 @@ export function usePool(roomId: string, owner: ScheduleOwner): PoolEntry[] {
   }, [items, places, rooms, roomId, owner])
 }
 
+/** 장소 풀에서 고른 카드가 이 일정(공동/개인)에 놓인 Day들. 고른 카드가 없으면 빈 집합. */
+export function usePickedDays(roomId: string, owner: ScheduleOwner): Set<number> {
+  const items = useStore((state) => state.items)
+  const pickedId = useStore((state) => state.poolSelectedId)
+  return useMemo(() => {
+    const days = new Set<number>()
+    if (!pickedId) return days
+    for (const item of items) {
+      if (item.roomId === roomId && item.owner === owner && item.placeId === pickedId) {
+        days.add(item.day)
+      }
+    }
+    return days
+  }, [items, pickedId, roomId, owner])
+}
+
 /** 일정 변경. 결과에 따라 "변경되었습니다" 또는 거절 메시지를 띄운다. */
 export function useScheduleActions(roomId: string, owner: ScheduleOwner) {
   return useMemo(() => {

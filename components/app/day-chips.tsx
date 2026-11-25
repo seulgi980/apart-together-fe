@@ -46,6 +46,11 @@ export function DayChips({
 /** 폭은 두 자리 Day(D99) 기준으로 고정해 D1과 D11의 크기가 같다 */
 const chipVariants = cva("relative w-14 px-0", {
   variants: {
+    /** 장소 풀에서 고른 카드가 이 Day에 놓여 있다: 연한 핫핑크 테두리가 커졌다 작아졌다 한다 */
+    pulsing: {
+      true: "outline-2 outline-offset-1 outline-select-soft animate-pulse-ring motion-reduce:animate-none",
+      false: "",
+    },
     /** 드래그한 항목을 놓을 수 있는 칩 */
     dropState: {
       idle: "",
@@ -53,13 +58,14 @@ const chipVariants = cva("relative w-14 px-0", {
       over: "border-dashed border-brand-700 bg-brand-250 ring-2 ring-brand-700",
     },
   },
-  defaultVariants: { dropState: "idle" },
+  defaultVariants: { dropState: "idle", pulsing: false },
 })
 
 export function DayChip({
   day,
   viewers = [],
   dropState,
+  pulsing = false,
   ref,
 }: {
   day: number
@@ -68,6 +74,8 @@ export function DayChip({
   /** 이 Day를 보고 있는 다른 멤버 (F4-16) */
   viewers?: MemberView[]
   dropState?: "idle" | "ready" | "over"
+  /** 장소 풀에서 고른 카드가 이 Day에 놓여 있는지 */
+  pulsing?: boolean
   ref?: React.Ref<HTMLButtonElement>
 }) {
   return (
@@ -77,7 +85,7 @@ export function DayChip({
       aria-label={
         viewers.length > 0 ? `Day ${day}, ${viewers.length}명이 보는 중` : `Day ${day}`
       }
-      className={chipVariants({ dropState })}
+      className={chipVariants({ dropState, pulsing })}
     >
       D{day}
       {viewers.length > 0 && (

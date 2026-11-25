@@ -41,6 +41,7 @@ import { PoolCardView, PoolList } from "@/features/schedule/pool";
 import { Timeline, type InsertPreview } from "@/features/schedule/timeline";
 import { useRoom, useRoomId } from "@/hooks/use-room";
 import {
+  usePickedDays,
   usePool,
   useScheduleActions,
   useScheduleView,
@@ -112,6 +113,8 @@ export function ScheduleScreen() {
 
   const entries = useTimeline(roomId, tab, day);
   const pool = usePool(roomId, tab);
+  const pickedDays = usePickedDays(roomId, tab);
+  const poolSelectedId = useStore((state) => state.poolSelectedId);
   const actions = useScheduleActions(roomId, tab);
 
   const [container, setContainer] = React.useState<HTMLElement | null>(null);
@@ -465,7 +468,12 @@ export function ScheduleScreen() {
 
           <DayChips active={day} onChange={setDay}>
             {days.map((target) => (
-              <DayChip key={target} day={target} viewers={viewersOf(target)} />
+              <DayChip
+                key={target}
+                day={target}
+                viewers={viewersOf(target)}
+                pulsing={pickedDays.has(target)}
+              />
             ))}
           </DayChips>
         </div>
@@ -519,8 +527,9 @@ export function ScheduleScreen() {
             <PoolList
               entries={shownPool}
               snap={snap}
+              selectedId={poolSelectedId}
               onAdd={(entry) => void actions.place(entry.place.id, day)}
-              onOpen={(entry) => openPlace(entry.place.id)}
+              onOpen={(entry) => useStore.getState().togglePoolPlace(entry.place.id)}
             />
           </PlacePoolSheet>
         </div>
