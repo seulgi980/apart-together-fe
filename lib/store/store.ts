@@ -43,7 +43,6 @@ import type {
   Room,
   ScheduleItem,
   ScheduleOwner,
-  Scope,
   User,
   Vote,
 } from "@/lib/types"
@@ -89,7 +88,6 @@ export type PlaceDraft = {
   sourceUrl: string
   category: Category
   memo?: string
-  scope: Scope
 }
 
 export type ReferenceDraft = {
@@ -183,7 +181,6 @@ type Actions = {
   updatePlace: (placeId: string, patch: { name: string; category: Category; memo?: string }) => Promise<ActionResult>
   deletePlace: (placeId: string) => Promise<ActionResult>
   vote: (placeId: string, vote: Vote) => Promise<ActionResult>
-  promoteToShared: (placeId: string) => Promise<ActionResult>
   addReference: (placeId: string, draft: ReferenceDraft) => Promise<ActionResult>
   updateReference: (placeId: string, referenceId: string, draft: ReferenceDraft) => Promise<ActionResult>
   deleteReference: (placeId: string, referenceId: string) => Promise<ActionResult>
@@ -301,7 +298,6 @@ function placeBody(draft: PlaceDraft) {
     googleMapsUrl: draft.sourceUrl,
     category: toCategoryDto(draft.category),
     memo: draft.memo || null,
-    visibility: draft.scope === "shared" ? "SHARED" : "PRIVATE",
   }
 }
 
@@ -631,7 +627,7 @@ export const useStore = create<Store>()(
               dropRoom(roomId)
             } else {
               await api("DELETE", `/api/trips/${roomId}/members/${userId}`)
-              // 그 멤버의 투표, 개인 일정, 나만 카드가 지워졌다. 방을 다시 불러온다.
+              // 그 멤버의 투표, 개인 일정이 지워졌다. 방을 다시 불러온다.
               await get().loadRoom(roomId)
             }
             return { ok: true }
@@ -687,7 +683,7 @@ export const useStore = create<Store>()(
             handleFailure(roomId, error)
             return {
               ok: false,
-              // 같은 장소는 같은 공개 범위 안에서 중복 등록할 수 없다 (F2-3)
+              // 방마다 같은 장소는 1장만 등록할 수 있다 (F2-3)
               duplicate: error instanceof ApiError && error.code === "PLACE_DUPLICATE",
               message: failure(error).message,
             }
@@ -721,8 +717,6 @@ export const useStore = create<Store>()(
             ? placeRequest(placeId, "DELETE", "/vote")
             : placeRequest(placeId, "PUT", "/vote", { vote: vote === "like" ? "LIKE" : "PASS" })
         },
-
-        promoteToShared: (placeId) => placeRequest(placeId, "POST", "/promote"),
 
         addReference: (placeId, draft) =>
           placeRequest(placeId, "POST", "/references", { ...draft, memo: draft.memo || null }),
@@ -963,7 +957,7 @@ export const useStore = create<Store>()(
                 realtime.disconnect()
                 dropRoom(roomId)
               } else {
-                // 그 멤버의 투표, 개인 일정, 나만 카드가 지워졌다
+                // 그 멤버의 투표, 개인 일정이 지워졌다
                 void get().loadRoom(roomId)
               }
               break

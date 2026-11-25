@@ -23,7 +23,7 @@ import {
   resolvePlaceLink,
   type ResolvedPlace,
 } from "@/lib/api/places";
-import type { Category, Scope } from "@/lib/types";
+import type { Category } from "@/lib/types";
 
 /**
  * 장소 추가 창 (F2-1, F2-2, F2-3, F2-7, F2-8).
@@ -96,13 +96,10 @@ function AddPlaceForm({
   const [address, setAddress] = React.useState("");
   // 서버가 카테고리를 추천하지 못하면 직접 고른다
   const [category, setCategory] = React.useState<Category>("etc");
-  const [scope, setScope] = React.useState<Scope>("shared");
   const [memo, setMemo] = React.useState("");
   const [notice, setNotice] = React.useState<Notice | null>(null);
   /** 서버가 알려준 실패 이유 (구글 키 없음, 구글에서 장소를 못 찾음 등) */
   const [failMessage, setFailMessage] = React.useState("");
-
-  /** 서버에 링크| null>(null);
 
   /** 서버에 링크를 보내 장소명·주소·좌표를 받아 온다 */
   const lookUp = React.useCallback(async (target: string) => {
@@ -151,7 +148,6 @@ function AddPlaceForm({
       lng: resolved.lng,
       sourceUrl: link.trim(),
       category,
-      scope,
       memo: memo.trim() || undefined,
     });
     setBusy(false);
@@ -237,26 +233,6 @@ function AddPlaceForm({
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label id="place-scope-label">공개 범위</Label>
-            <ToggleGroup
-              type="single"
-              variant="segment"
-              aria-labelledby="place-scope-label"
-              value={scope}
-              onValueChange={(next) => {
-                if (next) setScope(next as Scope);
-              }}
-            >
-              <ToggleGroupItem value="shared">공동</ToggleGroupItem>
-              <ToggleGroupItem value="private">나만</ToggleGroupItem>
-            </ToggleGroup>
-            <p className="text-caption text-brand-750">
-              {scope === "shared"
-                ? "모든 멤버가 보고 투표할 수 있어요."
-                : "나에게만 보이고 내 개인 일정에만 배치할 수 있어요."}
-            </p>
           </div>
           <FormField id="place-memo" label="한 줄 메모 (선택)">
             <Input

@@ -105,7 +105,7 @@ export function PlacePoolSheet({
           <p className="text-caption text-brand-750">
             {scope === "shared"
               ? "패스 카드는 제외됨"
-              : "공동 카드 전체 + 내 나만 카드"}
+              : "패스 카드 포함 전체"}
           </p>
         </div>
         <div className="flex items-center gap-3">

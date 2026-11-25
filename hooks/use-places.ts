@@ -19,26 +19,18 @@ export type PlaceView = {
   sharedItem?: ScheduleItem
 }
 
-/**
- * 장소 카드 조회와 변경.
- * 내가 볼 수 있는 카드만 돌려준다: 공동 카드 전체 + 내 나만 카드 (F2-9).
- */
+/** 장소 카드 조회와 변경. 방의 카드는 모두 멤버 모두가 함께 쓴다. */
 export function usePlaces(roomId: string) {
   const allPlaces = useStore((state) => state.places)
   const allItems = useStore((state) => state.items)
   const rooms = useStore((state) => state.rooms)
-  const meId = useStore((state) => state.sessionUserId)
 
   const places = useMemo<PlaceView[]>(() => {
     const room = rooms.find((candidate) => candidate.id === roomId)
     if (!room) return []
     const memberIds = room.members.map((member) => member.userId)
     return allPlaces
-      .filter(
-        (place) =>
-          place.roomId === roomId &&
-          (place.scope === "shared" || place.createdBy === meId)
-      )
+      .filter((place) => place.roomId === roomId)
       .map((place) => ({
         place,
         summary: summarizeVotes(place, memberIds),
@@ -48,7 +40,7 @@ export function usePlaces(roomId: string) {
       }))
       // 카드는 언제나 이름 가나다순. 새 카드도 제 자리에 들어간다.
       .sort((a, b) => compareNames(a.place.name, b.place.name))
-  }, [allPlaces, allItems, rooms, roomId, meId])
+  }, [allPlaces, allItems, rooms, roomId])
 
   const actions = useMemo(() => {
     const store = useStore.getState()
@@ -76,17 +68,6 @@ export function usePlaces(roomId: string) {
       async vote(placeId: string, vote: Vote) {
         return notifyResult(await store.vote(placeId, vote))
       },
-      /** 공동으로 올리기. 같은 장소의 공동 카드가 이미 있으면 "exists". */
-      async promote(placeId: string): Promise<"ok" | "exists" | "failed"> {
-        const result = await store.promoteToShared(placeId)
-        if (result.ok) {
-          notifyChanged()
-          return "ok"
-        }
-        if (result.code === "PLACE_ALREADY_SHARED") return "exists"
-        notifyFailed(result.message)
-        return "failed"
-      },
       async addReference(placeId: string, draft: ReferenceDraft) {
         return notifyResult(await store.addReference(placeId, draft))
       },
@@ -102,7 +83,7 @@ export function usePlaces(roomId: string) {
   return { places, ...actions }
 }
 
-/** 장소 하나. 볼 수 없는 카드(남의 나만 카드)면 null. */
+/** 장소 하나. 없는 카드(지워졌거나 다른 방)면 null. */
 export function usePlace(roomId: string, placeId: string | undefined) {
   const { places } = usePlaces(roomId)
   return useMemo(

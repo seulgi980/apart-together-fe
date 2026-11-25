@@ -15,8 +15,6 @@ export const statusSurface = cva("rounded-lg", {
       split: "border-2 border-dashed border-split bg-brand-0 shadow-card",
       pass: "border border-solid border-pass-line bg-pass-subtle",
       unrated: "border border-solid border-line bg-brand-0 shadow-card",
-      // 나만 카드는 미평가 카드와 같은 모양이고, "나만" 배지로만 구분한다
-      private: "border border-solid border-line bg-brand-0 shadow-card",
     } satisfies Record<PlaceStatus, string>,
   },
 })
@@ -29,7 +27,6 @@ export const statusTextColor = cva("", {
       split: "text-split",
       pass: "text-pass",
       unrated: "text-brand-750",
-      private: "text-private",
     } satisfies Record<PlaceStatus, string>,
   },
 })
@@ -42,7 +39,6 @@ export const statusTitleColor = cva("", {
       split: "text-brand-900",
       pass: "text-pass",
       unrated: "text-brand-900",
-      private: "text-brand-900",
     } satisfies Record<PlaceStatus, string>,
   },
 })
@@ -53,5 +49,4 @@ export const STATUS_BADGE_VARIANT = {
   split: "split",
   pass: "pass",
   unrated: "outline",
-  private: "solid",
 } as const satisfies Record<PlaceStatus, string>

@@ -120,7 +120,6 @@ export function toPlace(dto: PlaceDto): Place {
     sourceUrl: dto.googleMapsUrl,
     category: CATEGORY_FROM_DTO[dto.category],
     memo: dto.memo ?? undefined,
-    scope: dto.visibility === "SHARED" ? "shared" : "private",
     createdBy: String(dto.createdByUserId),
     votes,
     references: dto.references.map((reference) => ({

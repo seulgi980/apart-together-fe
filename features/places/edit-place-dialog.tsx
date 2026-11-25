@@ -72,7 +72,7 @@ function EditPlaceForm({
       <DialogHeader>
         <DialogTitle>장소 카드 수정</DialogTitle>
         <DialogDescription>
-          공개 범위는 여기서 바꿀 수 없어요. 나만 카드는 목록에서 공동으로 올릴 수 있어요.
+          장소명, 카테고리, 한 줄 메모를 바꿀 수 있어요.
         </DialogDescription>
       </DialogHeader>
       <FormField id="edit-place-name" label="장소명">

@@ -70,7 +70,7 @@
   --color-split-subtle: var(--color-brand-150);
   --color-pass: var(--color-brand-750); /* 패스 글자·채운 버튼 */
   --color-pass-subtle: var(--color-pass-fill); /* 패스 카드 */
-  --color-private: var(--color-brand-900); /* 나만 배지·글자 (카드 테두리는 미평가 카드와 같다) */
+  --color-private: var(--color-brand-900); /* 진한 배지(solid) 배경 */
   --color-private-subtle: var(--color-brand-150);
   --color-danger: var(--color-brand-900); /* 오류·삭제 */
   --color-error-text: #c0392b; /* 입력 오류 안내 문구, 안 읽은 채팅 수 배지 (붉은 계열) */

@@ -1,4 +1,4 @@
-import type { Category, PoolFilter, Scope } from "@/lib/types"
+import type { Category, PoolFilter } from "@/lib/types"
 
 export const CATEGORY_LABEL: Record<Category, string> = {
   restaurant: "식당",
@@ -11,18 +11,12 @@ export const CATEGORY_LABEL: Record<Category, string> = {
 
 export const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[]
 
-export const SCOPE_LABEL: Record<Scope, string> = {
-  shared: "공동",
-  private: "나만",
-}
-
 export const FILTER_LABEL: Record<PoolFilter, string> = {
   all: "전체",
   like: "좋아요",
   pass: "패스",
   split: "의견갈림",
   unrated: "미평가",
-  private: "나만",
   "mine-missing": "내가 투표 안 한",
 }
 

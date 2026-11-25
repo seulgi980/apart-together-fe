@@ -134,11 +134,7 @@ function MapView({ room }: { room: RoomView }) {
       meta={pin.meta}
       mapUrl={pin.place.sourceUrl}
       detail={
-        pin.canOpen ? (
-          <Link href={`/rooms/${roomId}/places/${pin.place.id}`}>
-            상세 보기
-          </Link>
-        ) : undefined
+        <Link href={`/rooms/${roomId}/places/${pin.place.id}`}>상세 보기</Link>
       }
     />
   );

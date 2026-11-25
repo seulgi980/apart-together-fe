@@ -35,7 +35,7 @@ import { ReferenceFormDialog } from "@/features/places/reference-form-dialog"
 import { useChat } from "@/hooks/use-chat"
 import { usePlace, usePlaces } from "@/hooks/use-places"
 import { useRoom, useRoomId } from "@/hooks/use-room"
-import { CATEGORY_LABEL, SCOPE_LABEL } from "@/lib/domain/labels"
+import { CATEGORY_LABEL } from "@/lib/domain/labels"
 import { formatRange } from "@/lib/domain/schedule"
 import { useStore } from "@/lib/store/store"
 import type { Reference, Vote } from "@/lib/types"
@@ -80,7 +80,6 @@ export function PlaceDetail({
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
-  const [promoteBlocked, setPromoteBlocked] = React.useState(false)
   const [referenceForm, setReferenceForm] = React.useState<{
     open: boolean
     editing?: Reference
@@ -104,7 +103,7 @@ export function PlaceDetail({
           <EmptyState
             icon={MapPinOff}
             title="카드를 찾을 수 없어요"
-            description="삭제되었거나 볼 수 없는 카드예요."
+            description="삭제된 카드예요."
           />
         </div>
       </>
@@ -112,7 +111,6 @@ export function PlaceDetail({
   }
 
   const { place, summary, sharedItem } = view
-  const isPrivate = place.scope === "private"
   const myVote = place.votes[room.me.id]
 
   const goToSchedule = () => {
@@ -152,17 +150,15 @@ export function PlaceDetail({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {!isPrivate && (
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      chat.sharePlace(place.id)
-                      chatToggle.show()
-                    }}
-                  >
-                    <MessageCircle />
-                    채팅에 공유
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem
+                  onSelect={() => {
+                    chat.sharePlace(place.id)
+                    chatToggle.show()
+                  }}
+                >
+                  <MessageCircle />
+                  채팅에 공유
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onSelect={() => setDeleteOpen(true)}
@@ -182,10 +178,7 @@ export function PlaceDetail({
           <section className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-3">
               <Badge>{CATEGORY_LABEL[place.category]}</Badge>
-              {!isPrivate && <StatusLabel summary={summary} as="badge" />}
-              <Badge variant={isPrivate ? "solid" : "outline"}>
-                {SCOPE_LABEL[place.scope]}
-              </Badge>
+              <StatusLabel summary={summary} as="badge" />
             </div>
             <div className="flex flex-col gap-1">
               <h2 className="text-display font-bold text-brand-900">
@@ -229,53 +222,33 @@ export function PlaceDetail({
             </div>
           </section>
 
-          {isPrivate ? (
-            <section className="flex flex-col gap-3">
-              <h3 className="text-subtitle font-bold text-brand-900">나만 카드</h3>
-              <p className="text-body text-brand-750">
-                나에게만 보이는 카드라 투표가 없어요. 공동으로 올리면 모든 멤버가 보고
-                투표할 수 있고, 다시 나만으로 되돌릴 수는 없어요.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  void actions.promote(place.id).then((result) => {
-                    if (result === "exists") setPromoteBlocked(true)
-                  })
-                }}
-              >
-                공동으로 올리기
-              </Button>
-            </section>
-          ) : (
-            <section className="flex flex-col gap-3">
-              <h3 className="text-subtitle font-bold text-brand-900">내 취향</h3>
-              <VoteButtons
-                myVote={myVote}
-                onVote={(vote) => actions.vote(place.id, vote)}
-              />
-              <ul className="flex flex-col gap-2">
-                {room.members.map((member) => {
-                  const vote = place.votes[member.id]
-                  return (
-                    <li key={member.id} className="flex items-center gap-3">
-                      <MemberAvatar
-                        member={member}
-                        vote={vote}
-                        state={vote ? "filled" : "pending"}
-                      />
-                      <span className="min-w-0 flex-1 truncate text-body text-brand-900">
-                        {member.nickname}
-                      </span>
-                      <span className="text-caption font-medium text-brand-750">
-                        {vote ? VOTE_TEXT[vote] : "아직 안 함"}
-                      </span>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          )}
+          <section className="flex flex-col gap-3">
+            <h3 className="text-subtitle font-bold text-brand-900">내 취향</h3>
+            <VoteButtons
+              myVote={myVote}
+              onVote={(vote) => actions.vote(place.id, vote)}
+            />
+            <ul className="flex flex-col gap-2">
+              {room.members.map((member) => {
+                const vote = place.votes[member.id]
+                return (
+                  <li key={member.id} className="flex items-center gap-3">
+                    <MemberAvatar
+                      member={member}
+                      vote={vote}
+                      state={vote ? "filled" : "pending"}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-body text-brand-900">
+                      {member.nickname}
+                    </span>
+                    <span className="text-caption font-medium text-brand-750">
+                      {vote ? VOTE_TEXT[vote] : "아직 안 함"}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
 
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
@@ -376,12 +349,6 @@ export function PlaceDetail({
             actions.removeReference(place.id, deletingReference.id)
           }
         }}
-      />
-      <ConfirmDialog
-        open={promoteBlocked}
-        onOpenChange={setPromoteBlocked}
-        title="공동으로 올릴 수 없어요"
-        description="이미 공동카드로 등록되어 있습니다."
       />
     </>
   )

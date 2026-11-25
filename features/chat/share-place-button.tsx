@@ -12,7 +12,6 @@ import { placeMeta } from "@/lib/domain/labels"
 /**
  * 채팅 입력창 왼쪽의 [+] 버튼. 누르면 입력창 위로 장소 카드 목록이 뜨고,
  * 카드를 고르면 채팅에 그 장소 카드가 올라간다 (F6-7).
- * 멤버 모두가 볼 수 있는 공동 카드만 올릴 수 있다.
  */
 export function SharePlaceButton({
   places,
@@ -26,9 +25,7 @@ export function SharePlaceButton({
 
   const keyword = query.trim().toLowerCase()
   const candidates = places.filter(
-    ({ place }) =>
-      place.scope === "shared" &&
-      (keyword === "" || place.name.toLowerCase().includes(keyword))
+    ({ place }) => keyword === "" || place.name.toLowerCase().includes(keyword)
   )
 
   return (
@@ -60,7 +57,7 @@ export function SharePlaceButton({
         />
         {candidates.length === 0 ? (
           <p className="py-4 text-center text-caption text-brand-750">
-            {keyword ? "찾는 장소가 없어요." : "올릴 수 있는 공동 카드가 없어요."}
+            {keyword ? "찾는 장소가 없어요." : "올릴 수 있는 장소 카드가 없어요."}
           </p>
         ) : (
           <ul className="flex max-h-60 flex-col gap-1 overflow-y-auto">

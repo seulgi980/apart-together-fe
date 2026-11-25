@@ -18,9 +18,6 @@ export type VoteSummary = {
  */
 export function summarizeVotes(place: Place, memberIds: string[]): VoteSummary {
   const total = memberIds.length
-  if (place.scope === "private") {
-    return { status: "private", likes: 0, passes: 0, total }
-  }
   let likes = 0
   let passes = 0
   for (const id of memberIds) {
@@ -50,8 +47,6 @@ export function statusText(summary: VoteSummary): string {
       return "의견갈림"
     case "unrated":
       return "미평가"
-    case "private":
-      return "나만"
   }
 }
 
@@ -64,7 +59,7 @@ export function matchesFilter(
 ): boolean {
   if (filter === "all") return true
   if (filter === "mine-missing") {
-    return place.scope === "shared" && place.votes[myId] === undefined
+    return place.votes[myId] === undefined
   }
   return summary.status === filter
 }

@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import type { RoomView } from "@/hooks/use-room"
 import { sortTimeline } from "@/lib/domain/schedule"
 import { summarizeVotes, statusText } from "@/lib/domain/status"
-import { CATEGORY_LABEL, SCOPE_LABEL } from "@/lib/domain/labels"
+import { CATEGORY_LABEL } from "@/lib/domain/labels"
 import { useStore } from "@/lib/store/store"
 import type { MemberView, Place, ScheduleItem } from "@/lib/types"
 
@@ -20,8 +20,6 @@ export type MapPinData = {
   member?: MemberView
   /** 요약 카드의 보조 문구: "관광 · 공동 일정 · 좋아요 3/4" */
   meta: string
-  /** 내가 상세 화면을 볼 수 있는 카드인지 */
-  canOpen: boolean
 }
 
 /** 좌표가 있어서 지도에 찍을 수 있는 장소 */
@@ -69,7 +67,7 @@ export function useMapPins(
       for (const item of sortTimeline(dayItems)) {
         const place = places.find((candidate) => candidate.id === item.placeId)
         if (item.kind === "memo" || !place || !hasCoordinates(place)) {
-          // 좌표가 없는 장소와 내가 볼 수 없는 카드(남의 나만 카드)는 핀 없이 목록에만 보여준다 (F5-1)
+          // 메모 항목, 좌표가 없는 장소, 지워진 카드는 핀 없이 목록에만 보여준다 (F5-1)
           const title = item.title ?? place?.name ?? item.placeName
           rows.push({ type: "memo", item: title ? { ...item, title } : item })
           continue
@@ -78,7 +76,7 @@ export function useMapPins(
         const meta = [
           CATEGORY_LABEL[place.category],
           owner === "shared" ? "공동 일정" : `${owner.nickname} 개인 일정`,
-          place.scope === "shared" ? statusText(summary) : SCOPE_LABEL.private,
+          statusText(summary),
         ].join(" · ")
         const pin: MapPinData = {
           key: item.id,
@@ -88,7 +86,6 @@ export function useMapPins(
           place,
           member: owner === "shared" ? undefined : owner,
           meta,
-          canOpen: place.scope === "shared" || place.createdBy === room.me.id,
         }
         pins.push(pin)
         rows.push({ type: "pin", pin })

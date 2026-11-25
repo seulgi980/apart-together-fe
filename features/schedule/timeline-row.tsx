@@ -163,15 +163,13 @@ function RowBody({
 
   const sub = [
     item.kind === "memo" ? "메모" : entry.category && CATEGORY_LABEL[entry.category],
-    place?.scope === "private" && "나만",
     item.note,
   ]
     .filter(Boolean)
     .join(" · ")
 
-  // 내가 볼 수 있는 카드만 상세로 이동할 수 있다
-  const canOpen =
-    place && (place.scope === "shared" || place.createdBy === room.me.id)
+  // 카드가 남아 있으면 상세로 이동할 수 있다
+  const canOpen = place !== undefined
   const text = (
     <TimelineItem.Text
       name={entry.name}

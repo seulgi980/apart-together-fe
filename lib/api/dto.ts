@@ -67,16 +67,15 @@ export type PlaceDto = {
   name: string
   /** 영어 장소명. 없으면 null */
   nameEn: string | null
-  address: string   /** 영어 주소. 없으면 null */
+  address: string | null
+  /** 영어 주소. 없으면 null */
   addressEn: string | null
-| null
   area: string | null
   latitude: number | null
   longitude: number | null
   googleMapsUrl: string
   category: CategoryDto
   memo: string | null
-  visibility: "SHARED" | "PRIVATE"
   createdByUserId: number
   votes: Record<string, "LIKE" | "PASS">
   references: ReferenceDto[]
@@ -87,9 +86,9 @@ export type ResolvedPlaceDto = {
   name: string
   /** 영어 장소명. 없으면 null */
   nameEn: string | null
-  address: string   /** 영어 주소. 없으면 null */
+  address: string | null
+  /** 영어 주소. 없으면 null */
   addressEn: string | null
-| null
   area: string | null
   latitude: number | null
   longitude: number | null

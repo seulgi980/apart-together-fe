@@ -146,10 +146,10 @@ export function PoolCardView({
   entry: PoolEntry
   action?: React.ReactNode
 }) {
-  const { place, summary, placedItems, canPlace, alsoShared } = entry
+  const { place, summary, placedItems, canPlace } = entry
   const meta = [
     CATEGORY_LABEL[place.category],
-    place.scope === "shared" ? statusText(summary) : null,
+    statusText(summary),
     place.references.length > 0 ? `링크 ${place.references.length}` : null,
   ]
     .filter(Boolean)
@@ -165,14 +165,12 @@ export function PoolCardView({
       <PlaceCard.Header name={place.name} />
       <PlaceCard.Meta>{meta}</PlaceCard.Meta>
       <PlaceCard.Footer>
-        {place.scope === "private" && <Badge variant="solid">나만</Badge>}
-        {alsoShared && <Badge variant="outline">공동에도 있음</Badge>}
         {placedItems.length > 0 && (
           <Badge>
             배치됨 · {placedItems.map((item) => `Day ${item.day}`).join(", ")}
           </Badge>
         )}
-        {placedItems.length === 0 && !alsoShared && (
+        {placedItems.length === 0 && (
           <Badge variant="like">드래그해서 배치</Badge>
         )}
         {placedItems.length > 0 && canPlace && (

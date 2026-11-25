@@ -57,11 +57,10 @@ export type Category =
   | "shopping"
   | "etc"
 
-export type Scope = "shared" | "private"
 export type Vote = "like" | "pass"
 
-/** 취향 상태 (F3-2) + 나만 카드 */
-export type PlaceStatus = "like" | "split" | "pass" | "unrated" | "private"
+/** 취향 상태 (F3-2) */
+export type PlaceStatus = "like" | "split" | "pass" | "unrated"
 
 export type Reference = {
   id: string
@@ -74,7 +73,7 @@ export type Reference = {
 export type Place = {
   id: string
   roomId: string
-  /** 구글맵 장소 식별자. 중복 등록·중복 배치 판단 기준 */
+  /** 구글맵 장소 식별자. 방마다 같은 장소는 1장 (중복 등록 판단 기준) */
   placeKey: string
   name: string
   /** 영어 장소명 (구글에서 받은 값. 없을 수 있다) */
@@ -91,7 +90,6 @@ export type Place = {
   sourceUrl: string
   category: Category
   memo?: string
-  scope: Scope
   createdBy: string
   votes: Record<string, Vote>
   references: Reference[]
@@ -108,7 +106,7 @@ export type ScheduleItem = {
   day: number
   kind: "place" | "memo"
   placeId?: string
-  /** 장소 항목의 장소명·카테고리. 남의 나만 카드로 넣은 항목은 카드를 볼 수 없어서 이 값으로 보여준다. */
+  /** 장소 항목의 장소명·카테고리 (서버가 함께 내려준다. 카드가 지워졌으면 없다) */
   placeName?: string
   placeCategory?: Category
   /** 메모 항목의 제목 ("숙소 체크인" 등) */

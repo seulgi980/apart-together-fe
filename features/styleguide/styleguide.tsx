@@ -98,7 +98,6 @@ const SUMMARY: Record<PlaceStatus, VoteSummary> = {
   split: { status: "split", likes: 1, passes: 1, total: 4 },
   pass: { status: "pass", likes: 0, passes: 3, total: 4 },
   unrated: { status: "unrated", likes: 0, passes: 0, total: 4 },
-  private: { status: "private", likes: 0, passes: 0, total: 4 },
 }
 
 const STATUSES = Object.keys(SUMMARY) as PlaceStatus[]
@@ -176,8 +175,8 @@ export function Styleguide() {
               <Link2 />
               링크 3
             </Badge>
-            <Badge variant="solid">나만</Badge>
-            <Badge variant="outline">공동</Badge>
+            <Badge variant="solid">solid</Badge>
+            <Badge variant="outline">outline</Badge>
             <Badge variant="like">좋아요 3/4</Badge>
             <Badge variant="split">의견갈림</Badge>
             <Badge variant="destructive">오류</Badge>
@@ -244,30 +243,16 @@ export function Styleguide() {
                   <PlaceCard.Body>
                     <PlaceCard.Header
                       name={`장소 카드 (${status})`}
-                      badge={
-                        status === "private" ? (
-                          <Badge variant="solid">나만</Badge>
-                        ) : (
-                          <Badge>링크 3</Badge>
-                        )
-                      }
+                      badge={<Badge>링크 3</Badge>}
                     />
-                    <PlaceCard.Meta>관광 · 아사쿠사</PlaceCard.Meta>
-                    {status !== "private" && (
-                      <PlaceCard.Votes>
-                        <VoteAvatars members={MEMBERS} votes={VOTES} />
-                        <StatusLabel summary={SUMMARY[status]} />
-                      </PlaceCard.Votes>
-                    )}
+                    <PlaceCard.Meta>관광 · Asakusa (아사쿠사)</PlaceCard.Meta>
+                    <PlaceCard.Votes>
+                      <VoteAvatars members={MEMBERS} votes={VOTES} />
+                      <StatusLabel summary={SUMMARY[status]} />
+                    </PlaceCard.Votes>
                   </PlaceCard.Body>
                   <PlaceCard.Actions>
-                    {status === "private" ? (
-                      <Button variant="outline" size="sm">
-                        공동으로 올리기
-                      </Button>
-                    ) : (
-                      <VoteButtons myVote={vote} onVote={setVote} />
-                    )}
+                    <VoteButtons myVote={vote} onVote={setVote} />
                   </PlaceCard.Actions>
                 </PlaceCard>
               </li>

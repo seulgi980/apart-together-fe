@@ -11,7 +11,7 @@ const badgeVariants = cva(
       variant: {
         /* 기본 태그: 링크 N, 유형 태그, 배치됨 */
         default: "border-brand-500 bg-brand-50 text-brand-750",
-        /* 나만 배지 */
+        /* 진한 배지 (선택됨 표시 등) */
         solid: "bg-private text-brand-0",
         outline: "border-brand-500 bg-brand-0 text-brand-750",
         like: "border-like-line bg-like-subtle text-brand-800",

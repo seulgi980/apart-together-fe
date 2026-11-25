@@ -100,7 +100,6 @@ const PERSONAL_FILTERS: PoolFilter[] = [
   "split",
   "pass",
   "unrated",
-  "private",
   "mine-missing",
 ];
 

@@ -26,14 +26,12 @@ export type PoolEntry = {
   placedItems: ScheduleItem[]
   /** 더 배치할 수 있는지. 숙소는 2번, 나머지는 1번까지 (F4-20) */
   canPlace: boolean
-  /** 개인 탭에서 같은 장소의 공동 카드가 있는 나만 카드 (F4-23) */
-  alsoShared: boolean
 }
 
 function toEntry(item: ScheduleItem, places: Place[]): TimelineEntry {
   if (item.kind === "memo") return { item, name: item.title ?? "메모" }
   const place = places.find((candidate) => candidate.id === item.placeId)
-  // 남의 나만 카드로 넣은 항목은 카드를 볼 수 없다. 항목에 실려 온 장소명·카테고리로 보여준다 (F2-9).
+  // 카드를 아직 못 받았거나 지워졌으면 항목에 실려 온 장소명·카테고리로 보여준다.
   return {
     item,
     name: place?.name ?? item.placeName ?? "삭제된 장소",
@@ -86,14 +84,13 @@ export function useTimeline(roomId: string, owner: ScheduleOwner, day: number) {
 
 /**
  * 탭별 장소 풀 (F4-6).
- * - 공동 탭: 공동 카드 중 패스 카드 제외
- * - 내 개인 탭: 공동 카드 전체 + 내 나만 카드
+ * - 공동 탭: 패스 카드 제외
+ * - 개인 탭: 패스 카드 포함 전체
  */
 export function usePool(roomId: string, owner: ScheduleOwner): PoolEntry[] {
   const items = useStore((state) => state.items)
   const places = useStore((state) => state.places)
   const rooms = useStore((state) => state.rooms)
-  const meId = useStore((state) => state.sessionUserId)
 
   return useMemo(() => {
     const room = rooms.find((candidate) => candidate.id === roomId)
@@ -103,20 +100,9 @@ export function usePool(roomId: string, owner: ScheduleOwner): PoolEntry[] {
     const schedule = items.filter(
       (item) => item.roomId === roomId && item.owner === owner
     )
-    const sharedKeys = new Set(
-      roomPlaces
-        .filter((place) => place.scope === "shared")
-        .map((place) => place.placeKey)
-    )
-
     return roomPlaces
       .map((place) => ({ place, summary: summarizeVotes(place, memberIds) }))
-      .filter(({ place, summary }) => {
-        if (owner === "shared") {
-          return place.scope === "shared" && summary.status !== "pass"
-        }
-        return place.scope === "shared" || place.createdBy === meId
-      })
+      .filter(({ summary }) => owner !== "shared" || summary.status !== "pass")
       .map(({ place, summary }) => {
         // 배치 여부는 카드가 아니라 장소 기준이다 (F4-20)
         const placedItems = schedule
@@ -131,11 +117,10 @@ export function usePool(roomId: string, owner: ScheduleOwner): PoolEntry[] {
           summary,
           placedItems,
           canPlace: placedItems.length < maxPlacements(place.category),
-          alsoShared: place.scope === "private" && sharedKeys.has(place.placeKey),
         }
       })
       .sort((a, b) => compareNames(a.place.name, b.place.name))
-  }, [items, places, rooms, roomId, owner, meId])
+  }, [items, places, rooms, roomId, owner])
 }
 
 /** 일정 변경. 결과에 따라 "변경되었습니다" 또는 거절 메시지를 띄운다. */

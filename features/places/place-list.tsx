@@ -9,7 +9,6 @@ import { EmptyState } from "@/components/app/empty-state";
 import { FilterChips, type ChipOption } from "@/components/app/filter-chips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AddPlaceDialog } from "@/features/places/add-place-dialog";
 import { PlaceListCard } from "@/features/places/place-list-card";
 import { usePlaces } from "@/hooks/use-places";
@@ -21,8 +20,6 @@ import type { Category, PoolFilter } from "@/lib/types";
 
 /** 한 번에 불러오는 카드 수 (무한 스크롤, F3-5) */
 const PAGE_SIZE = 12;
-
-type ScopeFilter = "all" | "shared" | "private";
 
 const CATEGORY_OPTIONS: ChipOption<Category>[] = (
   ["restaurant", "cafe", "sight", "stay", "shopping", "etc"] as Category[]
@@ -37,16 +34,12 @@ const TASTE_FILTERS: PoolFilter[] = [
   "mine-missing",
 ];
 
-type Notice = "not-google" | "promote-exists";
+type Notice = "not-google";
 
 const NOTICE_TEXT: Record<Notice, { title: string; description: string }> = {
   "not-google": {
     title: "구글맵 링크가 아니에요",
     description: "장소는 구글맵 링크로만 등록할 수 있어요.",
-  },
-  "promote-exists": {
-    title: "공동으로 올릴 수 없어요",
-    description: "이미 공동카드로 등록되어 있습니다.",
   },
 };
 
@@ -59,23 +52,20 @@ export function PlaceList({
   selectedId?: string;
 }) {
   const roomId = view.room.id;
-  const { places, vote, promote } = usePlaces(roomId);
+  const { places, vote } = usePlaces(roomId);
 
   const [link, setLink] = React.useState("");
   const [addState, setAddState] = React.useState<{
     open: boolean;
     link: string;
   }>({ open: false, link: "" });
-  const [scope, setScope] = React.useState<ScopeFilter>("all");
   const [category, setCategory] = React.useState<Category | null>(null);
   const [taste, setTaste] = React.useState<PoolFilter>("all");
   const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
   const [notice, setNotice] = React.useState<Notice | null>(null);
 
   const scoped = places.filter(
-    ({ place }) =>
-      (scope === "all" || place.scope === scope) &&
-      (category === null || place.category === category),
+    ({ place }) => category === null || place.category === category,
   );
   const filtered = scoped.filter(({ place, summary }) =>
     matchesFilter(place, taste, summary, view.me.id),
@@ -145,33 +135,16 @@ export function PlaceList({
             추가
           </Button>
         </form>
-        <div className="flex items-center gap-3">
-          <ToggleGroup
-            type="single"
-            variant="segment"
-            aria-label="공개 범위"
-            value={scope}
-            onValueChange={(next) => {
-              if (!next) return;
-              setScope(next as ScopeFilter);
-              resetPaging();
-            }}
-          >
-            <ToggleGroupItem value="all">전체</ToggleGroupItem>
-            <ToggleGroupItem value="shared">공동</ToggleGroupItem>
-            <ToggleGroupItem value="private">나만</ToggleGroupItem>
-          </ToggleGroup>
-          <FilterChips
-            label="카테고리"
-            options={CATEGORY_OPTIONS}
-            value={category}
-            allowEmpty
-            onChange={(next) => {
-              setCategory(next);
-              resetPaging();
-            }}
-          />
-        </div>
+        <FilterChips
+          label="카테고리"
+          options={CATEGORY_OPTIONS}
+          value={category}
+          allowEmpty
+          onChange={(next) => {
+            setCategory(next);
+            resetPaging();
+          }}
+        />
         <FilterChips
           label="취향 필터"
           options={tasteOptions}
@@ -210,11 +183,6 @@ export function PlaceList({
                     meId={view.me.id}
                     selected={placeView.place.id === selectedId}
                     onVote={(value) => vote(placeView.place.id, value)}
-                    onPromote={() => {
-                      void promote(placeView.place.id).then((result) => {
-                        if (result === "exists") setNotice("promote-exists");
-                      });
-                    }}
                   />
                 </li>
               ))}
