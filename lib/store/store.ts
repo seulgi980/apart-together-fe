@@ -923,8 +923,8 @@ export const useStore = create<Store>()(
 
         /**
          * 채팅창이 열려 있는 동안 보인 메시지를 읽음 처리한다 (카카오톡과 같은 규칙).
-         * 화면의 안 읽은 수가 0이어도, 마지막으로 알린 뒤 새 메시지가 왔으면 서버에 알린다.
-         * (내가 만든 시스템 메시지처럼 화면에서는 세지 않아도 서버는 안 읽음으로 세는 메시지가 있다)
+         * 화면의 안 읽은 수가 0이어도, 마지막으로 알린 뒤 새 메시지가 왔으면 서버의 읽은 위치를 맞춰 둔다.
+         * (안 읽은 수는 서버와 화면 모두 남이 보낸 말풍선 메시지만 센다)
          */
         markRead: async (roomId) => {
           const state = get()
@@ -960,14 +960,12 @@ export const useStore = create<Store>()(
               if (message.kind === "system" && message.placeId) clearPending([message.placeId])
               set((state) => {
                 const known = state.messages.some((candidate) => candidate.id === message.id)
-                // 내가 보낸 메시지와 내가 일정을 바꿔 생긴 시스템 메시지는 안 읽은 수에 넣지 않는다
-                const mine =
-                  message.userId === me ||
-                  (event.actorUserId != null && String(event.actorUserId) === me)
+                // 안 읽은 수는 남이 보낸 말풍선 메시지만 센다. 시스템 알림("~를 추가했습니다")은 세지 않는다.
+                const countable = message.kind !== "system" && message.userId !== me
                 return {
                   messages: mergeMessages(state.messages, [message]),
                   unread:
-                    known || mine
+                    known || !countable
                       ? state.unread
                       : { ...state.unread, [roomId]: (state.unread[roomId] ?? 0) + 1 },
                 }
