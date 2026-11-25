@@ -42,7 +42,8 @@ const titleRowVariants = cva("items-center justify-between gap-3", {
   },
 })
 
-const listAreaVariants = cva("min-h-0 flex-1 px-4", {
+/* pt-3: 고른 카드가 커지고 위에 "선택됨" 배지가 붙어도 잘리지 않게 위쪽에 여유를 둔다 */
+const listAreaVariants = cva("min-h-0 flex-1 px-4 pt-3", {
   variants: {
     snap: {
       collapsed: "overflow-x-auto overflow-y-hidden pb-2",

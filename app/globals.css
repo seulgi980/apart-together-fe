@@ -122,11 +122,26 @@
   /* 칩 줄을 넘길 때: 끝에서 살짝 넘쳤다가 돌아오는 튕김 */
   --ease-spring: cubic-bezier(0.22, 1.15, 0.36, 1);
 
-  /* 선택된 카드 강조: 세 번 깜빡인 뒤 멈춘다 */
-  --animate-blink: blink 0.7s ease-in-out 3;
-  @keyframes blink {
-    50% {
-      opacity: 0.3;
+  /*
+   * 선택 강조 (핫핑크). 장소 카드를 고르면 테두리와 바깥 빛, "선택됨" 배지로 한눈에 보이게 한다.
+   * 장소 풀에서 고른 카드가 놓인 Day 탭과 일정 줄은 연한 핫핑크 테두리가 커졌다 작아졌다 한다(pulse ring).
+   */
+  --color-select: #ff6b81;
+  --color-select-soft: #ffb3be;
+  /* 첫 겹은 테두리를 두껍게 보이게 하는 선(자리를 차지하지 않아 카드가 밀리지 않는다), 나머지는 바깥 빛 */
+  --shadow-select:
+    0 0 0 1.5px #ff6b81, 0 0 0 5px rgb(255 107 129 / 0.18),
+    0 14px 28px -8px rgb(255 107 129 / 0.45);
+  --animate-pulse-ring: pulse-ring 1.6s ease-out infinite;
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgb(255 107 129 / 0.55);
+    }
+    70% {
+      box-shadow: 0 0 0 9px rgb(255 107 129 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(255 107 129 / 0);
     }
   }
 

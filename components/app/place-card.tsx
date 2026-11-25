@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Check } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { statusSurface, statusTitleColor } from "@/lib/status-styles"
@@ -20,7 +21,10 @@ import { cn } from "@/lib/utils"
  *   </PlaceCard>
  */
 
-const cardVariants = cva("flex min-w-0 flex-col transition", {
+/* 고르거나 풀 때 크기·테두리·빛이 끊기지 않고 부드럽게 바뀌도록 transition을 길게(살짝 튕기게) 준다 */
+const cardVariants = cva(
+  "relative flex min-w-0 flex-col transition-[scale,box-shadow,border-color,opacity] duration-300 ease-spring motion-reduce:transition-none",
+  {
   variants: {
     size: {
       /** 장소 목록 카드 */
@@ -29,8 +33,8 @@ const cardVariants = cva("flex min-w-0 flex-col transition", {
       compact: "h-full gap-1 p-3",
     },
     selected: {
-      /* 선택된 카드: 커지고 떠오르며, 선택되는 순간 세 번 깜빡여 한눈에 찾을 수 있게 한다 */
-      true: "relative z-10 scale-105 animate-blink shadow-pop hover:scale-105 motion-reduce:animate-none",
+      /* 선택된 카드: 핫핑크 테두리 + 바깥 빛으로 커지며 떠오른다. 오른쪽 위에 "선택됨" 배지가 붙는다. */
+      true: "z-10 scale-106 border-solid! border-select! shadow-select! hover:scale-106",
       false: "",
     },
     dimmed: {
@@ -39,7 +43,8 @@ const cardVariants = cva("flex min-w-0 flex-col transition", {
     },
   },
   defaultVariants: { size: "list", selected: false, dimmed: false },
-})
+  }
+)
 
 const bodyVariants = cva(
   "flex min-w-0 flex-col rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -98,6 +103,12 @@ function PlaceCardRoot({
         {...props}
       >
         {children}
+        {selected && (
+          <span className="pointer-events-none absolute -top-2.5 -right-2 z-10 inline-flex items-center gap-0.5 rounded-full bg-select py-0.5 pr-2 pl-1.5 text-caption font-bold text-white shadow-pop animate-in fade-in zoom-in-75 duration-300 motion-reduce:animate-none">
+            <Check aria-hidden className="size-3.5" strokeWidth={3} />
+            선택됨
+          </span>
+        )}
       </article>
     </PlaceCardContext.Provider>
   )
