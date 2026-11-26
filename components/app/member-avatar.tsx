@@ -1,5 +1,4 @@
 import { cva, type VariantProps } from "class-variance-authority"
-import { ThumbsDown, ThumbsUp } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { MemberView, Vote } from "@/lib/types"
@@ -27,17 +26,13 @@ const fallbackVariants = cva("", {
   defaultVariants: { state: "filled" },
 })
 
-/**
- * 투표 표시: 아바타 오른쪽 아래에 좋아요(초록 따봉)·패스(빨간 아래 따봉) 아이콘만 크게 (배경 없음).
- * 아이콘 안을 투표 색으로 채우고 선을 흰색으로 그어, 사진 위에서도 테두리처럼 또렷하게 보이게 한다.
- */
-const voteBadgeVariants = cva(
-  "pointer-events-none absolute -right-2 -bottom-2 flex [&_svg]:size-5 [&_svg]:fill-current [&_svg]:stroke-brand-0 [&_svg]:stroke-2",
+const voteDotVariants = cva(
+  "absolute -right-1 -bottom-1 size-3 rounded-full border-2",
   {
     variants: {
       vote: {
-        like: "text-vote-like",
-        pass: "text-vote-pass",
+        like: "border-brand-0 bg-like",
+        pass: "border-brand-700 bg-brand-0",
       },
     },
   }
@@ -48,7 +43,7 @@ const VOTE_LABEL: Record<Vote, string> = { like: "좋아요", pass: "패스" }
 type MemberAvatarProps = {
   member: MemberView
   size?: "sm" | "md" | "chat" | "lg"
-  /** 투표 내용을 모서리 아이콘으로 표시 */
+  /** 투표 내용을 모서리 점으로 표시 */
   vote?: Vote
 } & VariantProps<typeof rootVariants> &
   VariantProps<typeof fallbackVariants>
@@ -78,11 +73,7 @@ export function MemberAvatar({
       <AvatarFallback className={fallbackVariants({ state })}>
         {initial}
       </AvatarFallback>
-      {vote && (
-        <span className={voteBadgeVariants({ vote })} aria-hidden>
-          {vote === "like" ? <ThumbsUp /> : <ThumbsDown />}
-        </span>
-      )}
+      {vote && <span className={voteDotVariants({ vote })} aria-hidden />}
     </Avatar>
   )
 }

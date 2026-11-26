@@ -75,7 +75,7 @@
   --color-danger: var(--color-brand-900); /* 오류·삭제 */
   --color-error-text: #c0392b; /* 입력 오류 안내 문구, 안 읽은 채팅 수 배지 (붉은 계열) */
   --color-danger-subtle: var(--color-brand-200);
-  /* 아바타 모서리의 투표 표시: 한눈에 구분되게 팔레트 밖의 초록(좋아요)·빨강(패스)을 쓴다 */
+  /* 좋아요·패스 버튼의 따봉 아이콘 안쪽 색: 한눈에 구분되게 팔레트 밖의 초록(좋아요)·빨강(패스)을 쓴다 */
   --color-vote-like: #2e9e5b;
   --color-vote-pass: #d64545;
 
