@@ -13,9 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { getDomain, isHttpUrl } from "@/lib/domain/labels"
 import type { ReferenceDraft } from "@/lib/store/store"
 import type { Reference } from "@/lib/types"
+
+/** 메모 최대 글자 수. 서버 DB 칸(VARCHAR 300)과 같다. */
+const MEMO_MAX = 300
 
 /** 참고자료 추가/수정 폼 (F2-4). 어떤 링크든 추가할 수 있다. */
 export function ReferenceFormDialog({
@@ -112,10 +116,15 @@ function ReferenceForm({
           onChange={(event) => setTitle(event.target.value)}
         />
       </FormField>
-      <FormField id="reference-memo" label="한 줄 메모 (선택)">
-        <Input
+      <FormField
+        id="reference-memo"
+        label={`메모 (선택, ${MEMO_MAX}자 제한)`}
+        help={`${memo.length} / ${MEMO_MAX}`}
+      >
+        <Textarea
           id="reference-memo"
-          maxLength={50}
+          rows={3}
+          maxLength={MEMO_MAX}
           value={memo}
           onChange={(event) => setMemo(event.target.value)}
         />
