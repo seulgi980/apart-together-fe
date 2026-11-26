@@ -256,7 +256,7 @@
 
 /*
  * 스크롤바: 웹(lg 이상)에서는 어디서나 같은 핑크(brand-350) 둥근 막대. 항상 보인다.
- * ScrollArea(components/ui/scroll-area)의 막대와 색·굵기가 같다.
+ * 스크롤은 모두 브라우저 스크롤 + 이 규칙 하나로 칠한다 (막대를 따로 그리는 컴포넌트는 쓰지 않는다).
  */
 *::-webkit-scrollbar {
   width: 12px;

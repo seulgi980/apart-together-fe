@@ -5,7 +5,6 @@ import { Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 /**
  * 채팅 패널의 틀: 메시지 목록 + 입력창.
@@ -55,11 +54,11 @@ export function ChatPanel({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ScrollArea
-        type="always"
-        className="min-h-0 flex-1"
-        viewportRef={viewportRef}
-        onScrollCapture={() => {
+      {/* 스크롤은 사이트 공통 스크롤(globals.css)을 쓴다: 웹은 핑크, 좁은 화면은 작은 회색 */}
+      <div
+        ref={viewportRef}
+        className="min-h-0 flex-1 overflow-y-auto"
+        onScroll={() => {
           // 위로 스크롤하면 이전 메시지를 이어서 불러온다 (F6-6)
           if (hasOlder && viewportRef.current?.scrollTop === 0) onLoadOlder()
         }}
@@ -76,7 +75,7 @@ export function ChatPanel({
           )}
           <ul className="flex flex-col gap-4">{children}</ul>
         </div>
-      </ScrollArea>
+      </div>
       <form
         onSubmit={submit}
         className="flex shrink-0 items-center gap-3 border-t border-line bg-brand-50 p-3"
