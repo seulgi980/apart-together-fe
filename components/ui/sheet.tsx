@@ -38,7 +38,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-brand-950/40 duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-40 bg-brand-950/40 duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className
       )}
       {...props}
@@ -46,6 +46,11 @@ function SheetOverlay({
   )
 }
 
+/*
+ * 배경막과 패널은 같은 z-40. 같은 포털 안에서 패널이 배경막 뒤에 그려지므로 패널이 위에 온다.
+ * (배경막이 패널보다 높으면 패널을 덮어 어둡게 보이고, 패널을 누른 것이 "바깥 누름"이 되어 닫힌다)
+ * 대화상자·메뉴(z-50)는 시트 위에 뜬다.
+ */
 const sheetVariants = cva(
   "fixed z-40 flex flex-col bg-popover text-body text-popover-foreground shadow-pop transition duration-200 ease-in-out data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
   {
