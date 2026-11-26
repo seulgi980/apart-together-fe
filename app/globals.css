@@ -283,23 +283,16 @@
 }
 
 /*
- * 좁은 화면(lg 미만, 모바일): 스크롤바를 휴대폰처럼 작은 회색 막대로 통일한다.
- * 큰 핑크 막대가 칩·카드를 가리지 않게 한다.
+ * 좁은 화면(lg 미만, 모바일): 색은 웹과 같은 핑크 그대로, 두께만 4px로 얇게 한다.
+ * 큰 막대가 칩·카드를 가리지 않게 한다.
  */
 @media (max-width: 1023.98px) {
   *::-webkit-scrollbar {
     width: 4px;
     height: 4px;
   }
-  *::-webkit-scrollbar-thumb,
-  *::-webkit-scrollbar-thumb:hover {
+  *::-webkit-scrollbar-thumb {
     border: 0;
-    background-color: rgb(51 41 43 / 0.3);
-  }
-  @supports not selector(::-webkit-scrollbar) {
-    * {
-      scrollbar-color: rgb(51 41 43 / 0.3) transparent;
-    }
   }
 }
 
