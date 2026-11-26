@@ -1,12 +1,13 @@
+import { StickyNote } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 
 /**
- * 메모 상자: 연핑크 테두리 위에 "memo" 라벨이 걸린 상자.
- *   ┌ memo ─────────┐
- *   │ 메모 내용       │  ← 글자 수만큼 늘어난다 (줄바꿈 유지)
- *   └───────────────┘
- * 참고자료 카드와 장소 상세에서 같이 쓴다.
- * 라벨 배경을 상자 배경과 같은 색(brand-50)으로 칠해 흰 카드·연한 패널 어디서나 자연스럽게 테두리를 끊는다.
+ * 메모 블록: 흰 카드 안에 놓는 연핑크(brand-200) 블록.
+ *   [메모 아이콘] 메모
+ *   메모 내용          ← 글자 수만큼 늘어난다 (줄바꿈 유지)
+ * 장소 상세의 장소 메모와 참고자료 메모가 같이 쓴다.
+ * 둘 다 흰 카드 안에 두어서 어디서나 바탕(흰색)과 블록 색이 같게 보인다.
  */
 export function MemoBox({
   children,
@@ -18,14 +19,15 @@ export function MemoBox({
   return (
     <span
       className={cn(
-        "relative mt-1 block rounded-md border border-brand-400 bg-brand-50 px-3 pt-2.5 pb-2",
+        "flex flex-col gap-1.5 rounded-lg bg-brand-200 px-3.5 py-3",
         className
       )}
     >
-      <span className="absolute -top-2.5 left-2 bg-brand-50 px-1 text-caption font-medium text-brand-600">
-        memo
+      <span className="flex items-center gap-1.5 text-brand-650">
+        <StickyNote aria-hidden className="size-3.5" />
+        <span className="text-caption font-bold">메모</span>
       </span>
-      <span className="block text-body break-words whitespace-pre-wrap text-brand-900">
+      <span className="text-body font-medium break-words whitespace-pre-wrap text-brand-900">
         {children}
       </span>
     </span>
