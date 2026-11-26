@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { usePlaces } from "@/hooks/use-places";
@@ -24,6 +25,7 @@ import {
   type ResolvedPlace,
 } from "@/lib/api/places";
 import type { Category } from "@/lib/types";
+import { MEMO_MAX } from "@/lib/domain/limits";
 
 /**
  * 장소 추가 창 (F2-1, F2-2, F2-3, F2-7, F2-8).
@@ -201,10 +203,15 @@ function AddPlaceForm({
               ))}
             </ToggleGroup>
           </div>
-          <FormField id="place-memo" label="한 줄 메모 (선택)">
-            <Input
+          <FormField
+            id="place-memo"
+            label={`메모 (선택, ${MEMO_MAX}자 제한)`}
+            help={`${memo.length} / ${MEMO_MAX}`}
+          >
+            <Textarea
               id="place-memo"
-              maxLength={50}
+              rows={3}
+              maxLength={MEMO_MAX}
               value={memo}
               onChange={(event) => setMemo(event.target.value)}
             />

@@ -13,10 +13,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { CATEGORIES, CATEGORY_LABEL } from "@/lib/domain/labels"
 import type { Category, Place } from "@/lib/types"
+import { MEMO_MAX } from "@/lib/domain/limits"
 
 type PlacePatch = { name: string; category: Category; memo?: string }
 
@@ -101,10 +103,15 @@ function EditPlaceForm({
           ))}
         </ToggleGroup>
       </div>
-      <FormField id="edit-place-memo" label="한 줄 메모 (선택)">
-        <Input
+      <FormField
+        id="edit-place-memo"
+        label={`메모 (선택, ${MEMO_MAX}자 제한)`}
+        help={`${memo.length} / ${MEMO_MAX}`}
+      >
+        <Textarea
           id="edit-place-memo"
-          maxLength={50}
+          rows={3}
+          maxLength={MEMO_MAX}
           value={memo}
           onChange={(event) => setMemo(event.target.value)}
         />

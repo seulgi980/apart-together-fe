@@ -17,9 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { getDomain, isHttpUrl } from "@/lib/domain/labels"
 import type { ReferenceDraft } from "@/lib/store/store"
 import type { Reference } from "@/lib/types"
-
-/** 메모 최대 글자 수. 서버 DB 칸(VARCHAR 300)과 같다. */
-const MEMO_MAX = 300
+import { MEMO_MAX } from "@/lib/domain/limits"
 
 /** 참고자료 추가/수정 폼 (F2-4). 어떤 링크든 추가할 수 있다. */
 export function ReferenceFormDialog({
