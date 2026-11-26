@@ -227,13 +227,15 @@ export function PlaceDetail({
             </div>
           </section>
 
-          <section className="flex flex-col gap-3">
+          {/* 내 취향: 버튼 → 투표 결과 막대 → 멤버 목록. 단계 사이를 넉넉히 띄운다 */}
+          <section className="flex flex-col gap-4 rounded-lg border border-line bg-brand-0 p-4 lg:p-5">
             <h3 className="text-subtitle font-bold text-brand-900">내 취향</h3>
             <VoteButtons
               myVote={myVote}
               onVote={(vote) => actions.vote(place.id, vote)}
             />
-            <ul className="flex flex-col gap-2">
+            <VoteTally likes={summary.likes} passes={summary.passes} total={summary.total} />
+            <ul className="flex flex-col gap-2.5">
               {room.members.map((member) => {
                 const vote = place.votes[member.id]
                 return (
@@ -245,6 +247,9 @@ export function PlaceDetail({
                     />
                     <span className="min-w-0 flex-1 truncate text-body text-brand-900">
                       {member.nickname}
+                      {member.isMe && (
+                        <span className="ml-1 text-caption text-brand-750">(나)</span>
+                      )}
                     </span>
                     <span className="text-caption font-medium text-brand-750">
                       {vote ? VOTE_TEXT[vote] : "아직 안 함"}
@@ -385,5 +390,41 @@ function AddressLine({
         {children}
       </span>
     </p>
+  )
+}
+
+/**
+ * 투표 결과: "4명 중 3명 투표 · 좋아요 2 · 패스 1" + 칸 막대.
+ * 막대는 멤버 한 명당 한 칸. 좋아요(핑크) → 패스(회색) → 아직 안 함(빈 칸) 순서로 칠한다.
+ */
+function VoteTally({
+  likes,
+  passes,
+  total,
+}: {
+  likes: number
+  passes: number
+  total: number
+}) {
+  // 칸마다 색: 좋아요 수만큼 핑크, 그다음 패스 수만큼 회색, 나머지는 빈 칸
+  const cells = Array.from({ length: total }, (_, index) =>
+    index < likes ? "bg-brand-500" : index < likes + passes ? "bg-pass-line" : "bg-brand-200"
+  )
+  return (
+    <div className="flex flex-col gap-1.5 border-t border-line pt-4">
+      <p className="flex items-center justify-between gap-3 text-caption text-brand-750">
+        <span className="font-bold text-brand-900">
+          {total}명 중 {likes + passes}명 투표
+        </span>
+        <span>
+          좋아요 {likes} · 패스 {passes}
+        </span>
+      </p>
+      <div aria-hidden className="flex h-2 gap-0.5 overflow-hidden rounded-full">
+        {cells.map((color, index) => (
+          <span key={index} className={`flex-1 ${color}`} />
+        ))}
+      </div>
+    </div>
   )
 }
