@@ -27,9 +27,12 @@ const fallbackVariants = cva("", {
   defaultVariants: { state: "filled" },
 })
 
-/** 투표 표시: 아바타 오른쪽 아래의 흰 원 안에 좋아요(초록 따봉)·패스(빨간 아래 따봉) 아이콘 */
+/**
+ * 투표 표시: 아바타 오른쪽 아래에 좋아요(초록 따봉)·패스(빨간 아래 따봉) 아이콘만 크게 (배경 없음).
+ * 아이콘 안을 투표 색으로 채우고 선을 흰색으로 그어, 사진 위에서도 테두리처럼 또렷하게 보이게 한다.
+ */
 const voteBadgeVariants = cva(
-  "absolute -right-1 -bottom-1 flex size-3.5 items-center justify-center rounded-full bg-brand-0 shadow-card [&_svg]:size-2.5 [&_svg]:stroke-[2.5]",
+  "pointer-events-none absolute -right-2 -bottom-2 flex [&_svg]:size-5 [&_svg]:fill-current [&_svg]:stroke-brand-0 [&_svg]:stroke-2",
   {
     variants: {
       vote: {
