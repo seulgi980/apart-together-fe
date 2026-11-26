@@ -179,12 +179,13 @@ export function PlaceDetail({
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 p-4 lg:gap-8 lg:p-5">
           <PlaceGoogleInfoPanel roomId={roomId} placeId={place.id} />
-          <section className="flex flex-col gap-3">
+          {/* 장소 정보: 흰 카드 한 장. 메모도 이 안에 두어 참고자료 카드와 같은 흰 바탕 위에 놓인다 */}
+          <section className="flex flex-col gap-4 rounded-lg border border-line bg-brand-0 p-4 shadow-card lg:p-5">
             <div className="flex flex-wrap items-center gap-3">
               <Badge>{CATEGORY_LABEL[place.category]}</Badge>
               <StatusLabel summary={summary} as="badge" />
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5">
               <h2 className="text-display font-bold text-brand-900">
                 {place.name}
               </h2>
@@ -193,17 +194,21 @@ export function PlaceDetail({
                   {place.nameEn}
                 </p>
               )}
-              <p className="text-body text-brand-750">{place.address}</p>
-              {place.addressEn && (
-                <p lang="en" className="text-caption text-brand-750">
-                  {place.addressEn}
-                </p>
-              )}
-              {place.memo && <MemoBox className="my-2">{place.memo}</MemoBox>}
-              <p className="text-caption text-brand-750">
-                등록 · {room.getMember(place.createdBy).nickname}
-              </p>
             </div>
+            {(place.address || place.addressEn) && (
+              <div className="flex flex-col gap-2 border-t border-line pt-3.5">
+                {place.address && <AddressLine marker="KO">{place.address}</AddressLine>}
+                {place.addressEn && (
+                  <AddressLine marker="EN" lang="en">
+                    {place.addressEn}
+                  </AddressLine>
+                )}
+              </div>
+            )}
+            {place.memo && <MemoBox>{place.memo}</MemoBox>}
+            <p className="text-caption text-brand-750">
+              등록 · {room.getMember(place.createdBy).nickname}
+            </p>
             <div className="flex items-center gap-3">
               <Button asChild className="flex-1">
                 <a
@@ -351,5 +356,34 @@ export function PlaceDetail({
         }}
       />
     </>
+  )
+}
+
+/** 주소 한 줄: 앞에 KO / EN 표시를 붙여 한글·영문 주소를 구분한다 */
+function AddressLine({
+  marker,
+  lang,
+  children,
+}: {
+  marker: "KO" | "EN"
+  lang?: string
+  children: React.ReactNode
+}) {
+  return (
+    <p className="flex items-start gap-2.5">
+      <span
+        aria-hidden
+        className="mt-0.5 w-8 shrink-0 rounded-sm bg-brand-200 text-center text-caption font-bold tracking-wide text-brand-700"
+      >
+        {marker}
+      </span>
+      <span className="sr-only">{marker === "KO" ? "한글 주소" : "영문 주소"}</span>
+      <span
+        lang={lang}
+        className={marker === "KO" ? "text-body text-brand-900" : "text-caption text-brand-750"}
+      >
+        {children}
+      </span>
+    </p>
   )
 }
