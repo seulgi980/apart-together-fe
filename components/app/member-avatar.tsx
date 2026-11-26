@@ -31,8 +31,9 @@ const voteDotVariants = cva(
   {
     variants: {
       vote: {
-        like: "border-brand-0 bg-like",
-        pass: "border-brand-700 bg-brand-0",
+        /* 좋아요 = 진핑크, 패스 = 진한 갈색 (좋아요·패스 버튼의 따봉 색과 같다) */
+        like: "border-brand-0 bg-select",
+        pass: "border-brand-0 bg-brand-750",
       },
     },
   }

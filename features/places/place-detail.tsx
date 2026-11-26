@@ -395,7 +395,7 @@ function AddressLine({
 
 /**
  * 투표 결과: "4명 중 3명 투표 · 좋아요 2 · 패스 1" + 칸 막대.
- * 막대는 멤버 한 명당 한 칸. 좋아요(핑크) → 패스(회색) → 아직 안 함(빈 칸) 순서로 칠한다.
+ * 막대는 멤버 한 명당 한 칸. 좋아요(진핑크) → 패스(진한 갈색) → 아직 안 함(빈 칸) 순서로 칠한다.
  */
 function VoteTally({
   likes,
@@ -406,9 +406,9 @@ function VoteTally({
   passes: number
   total: number
 }) {
-  // 칸마다 색: 좋아요 수만큼 핑크, 그다음 패스 수만큼 회색, 나머지는 빈 칸
+  // 칸마다 색: 좋아요 수만큼 진핑크, 그다음 패스 수만큼 진한 갈색, 나머지는 빈 칸
   const cells = Array.from({ length: total }, (_, index) =>
-    index < likes ? "bg-brand-500" : index < likes + passes ? "bg-pass-line" : "bg-brand-200"
+    index < likes ? "bg-select" : index < likes + passes ? "bg-brand-750" : "bg-brand-200"
   )
   return (
     <div className="flex flex-col gap-1.5 border-t border-line pt-4">
