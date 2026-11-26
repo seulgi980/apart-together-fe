@@ -17,6 +17,7 @@ import { AppHeader } from "@/components/app/app-header"
 import { ConfirmDialog } from "@/components/app/confirm-dialog"
 import { EmptyState } from "@/components/app/empty-state"
 import { MemberAvatar } from "@/components/app/member-avatar"
+import { MemoBox } from "@/components/app/memo-box"
 import { ReferenceItem } from "@/components/app/reference-item"
 import { StatusLabel } from "@/components/app/status-label"
 import { VoteButtons } from "@/components/app/vote-buttons"
@@ -198,11 +199,7 @@ export function PlaceDetail({
                   {place.addressEn}
                 </p>
               )}
-              {place.memo && (
-                <p className="text-body text-brand-750">
-                  한 줄 메모 · {place.memo}
-                </p>
-              )}
+              {place.memo && <MemoBox className="my-2">{place.memo}</MemoBox>}
               <p className="text-caption text-brand-750">
                 등록 · {room.getMember(place.createdBy).nickname}
               </p>

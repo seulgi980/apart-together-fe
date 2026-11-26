@@ -2,6 +2,7 @@
 
 import { MoreVertical, Pencil, Trash2 } from "lucide-react"
 
+import { MemoBox } from "@/components/app/memo-box"
 import { SiteIcon } from "@/components/app/site-icon"
 import { Button } from "@/components/ui/button"
 import {
@@ -49,16 +50,7 @@ export function ReferenceItem({
           </span>
         </span>
         {/* 아래 두 줄은 제목 시작선(아이콘 28 + 간격 12)에 맞춘다 */}
-        {reference.memo && (
-          <span className="relative mt-1 ml-10 block rounded-md border border-brand-400 bg-brand-50 px-3 pt-2.5 pb-2">
-            <span className="absolute -top-2.5 left-2 bg-brand-0 px-1 text-caption font-medium text-brand-600">
-              memo
-            </span>
-            <span className="block text-body break-words whitespace-pre-wrap text-brand-900">
-              {reference.memo}
-            </span>
-          </span>
-        )}
+        {reference.memo && <MemoBox className="ml-10">{reference.memo}</MemoBox>}
         <span className="ml-10 truncate text-caption text-brand-750">
           {getDomain(reference.url)} · 추가 · {addedBy}
         </span>
