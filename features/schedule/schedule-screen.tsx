@@ -200,6 +200,8 @@ export function ScheduleScreen() {
     entry: TimelineEntry;
     target: number;
   } | null>(null);
+  /** 삭제(일정에서 제외) 확인창에 올라온 항목. 메뉴를 누르자마자 지우지 않고 한 번 묻는다. */
+  const [removing, setRemoving] = React.useState<TimelineEntry | null>(null);
   const [dialog, setDialog] = React.useState<ItemDialogState>({
     mode: "closed",
   });
@@ -495,7 +497,7 @@ export function ScheduleScreen() {
             onOpenPlace={openPlace}
             onEditTime={openEdit}
             onMoveDay={(entry, target) => setMoving({ entry, target })}
-            onRemove={(entry) => void actions.remove(entry.item.id)}
+            onRemove={setRemoving}
           />
           <PlacePoolSheet
             scope={isShared ? "shared" : "personal"}
@@ -578,6 +580,30 @@ export function ScheduleScreen() {
         confirmLabel="옮기기"
         onConfirm={() => {
           if (moving) void actions.moveToDay(moving.entry.item.id, moving.target);
+        }}
+      />
+
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoving(null);
+        }}
+        title={
+          removing?.item.kind === "memo"
+            ? "메모를 삭제할까요?"
+            : "일정에서 제외할까요?"
+        }
+        description={
+          removing
+            ? removing.item.kind === "memo"
+              ? `"${removing.name}" 메모가 일정에서 삭제됩니다.`
+              : `${removing.name}이(가) 일정에서 빠집니다. 장소 카드는 지워지지 않아요.`
+            : undefined
+        }
+        confirmLabel={removing?.item.kind === "memo" ? "삭제" : "제외"}
+        destructive
+        onConfirm={() => {
+          if (removing) void actions.remove(removing.item.id);
         }}
       />
 
