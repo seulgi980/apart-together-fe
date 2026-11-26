@@ -27,7 +27,7 @@ export function MemoBox({
         <StickyNote aria-hidden className="size-3.5" />
         <span className="text-caption font-bold">메모</span>
       </span>
-      <span className="text-body font-medium break-words whitespace-pre-wrap text-brand-900">
+      <span className="text-body break-words whitespace-pre-wrap text-brand-900">
         {children}
       </span>
     </span>
