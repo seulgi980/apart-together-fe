@@ -16,6 +16,8 @@ type ChatMessageProps =
       variant: "user"
       member: MemberView
       time: string
+      /** 프로필 사진을 눌렀을 때 (멤버 프로필 열기) */
+      onAvatarClick?: () => void
       children: React.ReactNode
     }
   | { variant: "system"; children: React.ReactNode }
@@ -63,7 +65,19 @@ export function ChatMessage(props: ChatMessageProps) {
   const side = props.member.isMe ? "mine" : "theirs"
   return (
     <li className={rowVariants({ side })}>
-      <MemberAvatar member={props.member} size="chat" ring />
+      {props.onAvatarClick ? (
+        <button
+          type="button"
+          data-chat-avatar
+          aria-label={`${props.member.nickname} 프로필 보기`}
+          className="shrink-0 rounded-full outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={props.onAvatarClick}
+        >
+          <MemberAvatar member={props.member} size="chat" ring />
+        </button>
+      ) : (
+        <MemberAvatar member={props.member} size="chat" ring />
+      )}
       <div className={columnVariants({ side })}>
         <p className="text-caption text-brand-750">
           {props.member.nickname} · {props.time}

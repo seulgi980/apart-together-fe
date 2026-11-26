@@ -10,15 +10,22 @@ import {
 } from "@/components/app/chat-message"
 import { ChatPanel } from "@/components/app/chat-panel"
 import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover"
+import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { MemberProfileCard } from "@/features/chat/member-profile-card"
 import { SharePlaceButton } from "@/features/chat/share-place-button"
 import { useChatToggle } from "@/features/chat/use-chat-toggle"
 import { useChat } from "@/hooks/use-chat"
+import { useIsDesktop } from "@/hooks/use-is-desktop"
 import { usePlaces } from "@/hooks/use-places"
 import { useRoom } from "@/hooks/use-room"
 import { placeMeta } from "@/lib/domain/labels"
@@ -39,9 +46,26 @@ function ChatBody({ roomId }: { roomId: string }) {
   // 카드 ID -> 카드. 메시지마다 카드 목록을 뒤지지 않게 한 번 만들어 둔다.
   const placeById = new Map(places.map((placeView) => [placeView.place.id, placeView]))
 
+  // 프로필을 연 멤버. 사진을 한 번 더 누르면 닫힌다.
+  const isDesktop = useIsDesktop()
+  const [profileId, setProfileId] = React.useState<string | null>(null)
+  const toggleProfile = (userId: string) =>
+    setProfileId((current) => (current === userId ? null : userId))
+  const closeProfile = () => setProfileId(null)
+
   if (!view) return null
 
-  return (
+  // 추가한 카드 수: 방의 카드는 이미 화면에 다 불러와 있으니 서버에 다시 묻지 않고 그 목록에서 센다
+  const profileMember = profileId ? view.getMember(profileId) : null
+  const profile = profileMember && (
+    <MemberProfileCard
+      member={profileMember}
+      placeCount={places.filter((placeView) => placeView.place.createdBy === profileId).length}
+      onClose={closeProfile}
+    />
+  )
+
+  const panel = (
     <ChatPanel
       messageCount={messages.length}
       hasOlder={hasOlder}
@@ -71,6 +95,7 @@ function ChatBody({ roomId }: { roomId: string }) {
               variant="user"
               member={view.getMember(message.userId)}
               time={message.time}
+              onAvatarClick={() => toggleProfile(message.userId!)}
             >
               {message.text}
               {message.kind === "place" &&
@@ -93,6 +118,46 @@ function ChatBody({ roomId }: { roomId: string }) {
         )
       })}
     </ChatPanel>
+  )
+
+  // 모바일: 채팅 왼쪽에 자리가 없어서 채팅 안쪽 위에 겹쳐 띄운다
+  if (!isDesktop) {
+    return (
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {panel}
+        {profile && (
+          <div className="absolute inset-x-3 top-3 z-10 h-1/3 min-h-56 rounded-xl border border-line bg-popover shadow-pop animate-in fade-in-0 zoom-in-95">
+            {profile}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // 웹: 채팅 패널 왼쪽 위에 채팅 높이의 1/3 크기로 붙여 띄운다
+  return (
+    <Popover open={profile !== null} onOpenChange={(open) => !open && closeProfile()}>
+      <PopoverAnchor asChild>
+        <div className="flex min-h-0 flex-1 flex-col">{panel}</div>
+      </PopoverAnchor>
+      <PopoverContent
+        side="left"
+        align="start"
+        sideOffset={12}
+        alignOffset={12}
+        avoidCollisions={false}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        // 다른 사람 사진을 누르면 닫혔다 다시 열리지 않고 바로 그 사람으로 바뀌게, 사진 클릭은 바깥 클릭으로 치지 않는다
+        onInteractOutside={(event) => {
+          if ((event.target as Element | null)?.closest?.("[data-chat-avatar]")) {
+            event.preventDefault()
+          }
+        }}
+        className="h-[max(14rem,calc(var(--radix-popover-trigger-height)/3))] w-60 p-0"
+      >
+        {profile}
+      </PopoverContent>
+    </Popover>
   )
 }
 
