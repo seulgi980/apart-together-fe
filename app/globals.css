@@ -255,7 +255,7 @@
 }
 
 /*
- * 스크롤바: 웹(lg 이상)에서는 어디서나 같은 핑크(brand-350) 둥근 막대. 항상 보인다.
+ * 스크롤바: 어디서나 같은 핑크(brand-450, 올리면 brand-550) 둥근 막대. 항상 보인다.
  * 스크롤은 모두 브라우저 스크롤 + 이 규칙 하나로 칠한다 (막대를 따로 그리는 컴포넌트는 쓰지 않는다).
  */
 *::-webkit-scrollbar {
@@ -268,17 +268,17 @@
 *::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 9999px;
-  background-color: var(--color-brand-350);
+  background-color: var(--color-brand-450);
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-brand-450);
+  background-color: var(--color-brand-550);
 }
 /* ::-webkit-scrollbar를 모르는 브라우저(Firefox) */
 @supports not selector(::-webkit-scrollbar) {
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-brand-350) transparent;
+    scrollbar-color: var(--color-brand-450) transparent;
   }
 }
 
