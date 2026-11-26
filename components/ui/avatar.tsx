@@ -10,10 +10,11 @@ const avatarVariants = cva(
   "relative flex shrink-0 rounded-full select-none",
   {
     variants: {
-      /* sm 20 / md 28 / lg 40 */
+      /* sm 20 / md 28 / chat 36 (채팅방 전용) / lg 40 */
       size: {
         sm: "size-5 text-caption",
         md: "size-7 text-caption",
+        chat: "size-9 text-body",
         lg: "size-10 text-body",
       },
     },

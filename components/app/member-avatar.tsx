@@ -44,7 +44,7 @@ const VOTE_LABEL: Record<Vote, string> = { like: "좋아요", pass: "패스" }
 
 type MemberAvatarProps = {
   member: MemberView
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "md" | "chat" | "lg"
   /** 투표 내용을 모서리 아이콘으로 표시 */
   vote?: Vote
 } & VariantProps<typeof rootVariants> &

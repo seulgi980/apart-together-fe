@@ -63,7 +63,7 @@ export function ChatMessage(props: ChatMessageProps) {
   const side = props.member.isMe ? "mine" : "theirs"
   return (
     <li className={rowVariants({ side })}>
-      <MemberAvatar member={props.member} ring />
+      <MemberAvatar member={props.member} size="chat" ring />
       <div className={columnVariants({ side })}>
         <p className="text-caption text-brand-750">
           {props.member.nickname} · {props.time}
