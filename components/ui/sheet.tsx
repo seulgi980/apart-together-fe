@@ -30,26 +30,12 @@ function SheetPortal({
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
-function SheetOverlay({
-  className,
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
-  return (
-    <SheetPrimitive.Overlay
-      data-slot="sheet-overlay"
-      className={cn(
-        "fixed inset-0 z-40 bg-brand-950/40 duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
 /*
- * 배경막과 패널은 같은 z-40. 같은 포털 안에서 패널이 배경막 뒤에 그려지므로 패널이 위에 온다.
- * (배경막이 패널보다 높으면 패널을 덮어 어둡게 보이고, 패널을 누른 것이 "바깥 누름"이 되어 닫힌다)
- * 대화상자·메뉴(z-50)는 시트 위에 뜬다.
+ * 시트(슬라이드 패널)에는 배경막(뒤 화면을 어둡게 덮는 막)을 두지 않는다.
+ * - 채팅: 뒤 화면을 같이 조작하는 패널이라 가리면 안 된다
+ * - 모바일 장소 상세: 화면을 꽉 채워서 덮을 뒤 화면도, 누를 바깥도 없다
+ * 배경막은 "삭제할까요?" 같은 대화상자(dialog, alert-dialog)에만 둔다.
+ * 대화상자·메뉴(z-50)는 시트(z-40) 위에 뜬다.
  */
 const sheetVariants = cva(
   "fixed z-40 flex flex-col bg-popover text-body text-popover-foreground shadow-pop transition duration-200 ease-in-out data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
@@ -72,17 +58,13 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
-  overlay = true,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> &
   VariantProps<typeof sheetVariants> & {
     showCloseButton?: boolean
-    /** false면 배경을 가리지 않는다 (뒤 화면을 같이 조작하는 패널용) */
-    overlay?: boolean
   }) {
   return (
     <SheetPortal>
-      {overlay && <SheetOverlay />}
       <SheetPrimitive.Content
         data-slot="sheet-content"
         data-side={side}

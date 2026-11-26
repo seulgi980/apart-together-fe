@@ -197,7 +197,6 @@ export function ChatSheet({ roomId }: { roomId: string }) {
     >
       <SheetContent
         side="right"
-        overlay={false}
         onInteractOutside={(event) => event.preventDefault()}
       >
         <SheetHeader className="border-b border-line">
