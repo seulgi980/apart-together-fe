@@ -140,6 +140,8 @@ export type ChatMessageDto = {
   senderUserId: number | null
   content: string
   sharedPlaceId: number | null
+  /** 보낸 화면이 붙인 번호표. 시스템 메시지와 예전 메시지는 null */
+  clientMessageId: string | null
   createdAt: string
 }
 

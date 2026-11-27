@@ -40,6 +40,7 @@ import type {
   Category,
   ChatMessage,
   MemberColor,
+  OutgoingMessage,
   Place,
   Room,
   ScheduleItem,
@@ -113,6 +114,8 @@ type DataState = {
   places: Place[]
   items: ScheduleItem[]
   messages: ChatMessage[]
+  /** 내가 보냈지만 서버 확인을 아직 못 받았거나 실패한 메시지 */
+  outbox: OutgoingMessage[]
   sessionUserId: string | null
   unread: Record<string, number>
   /** 방마다 더 불러올 이전 메시지가 있는지 */
@@ -212,6 +215,10 @@ type Actions = {
 
   sendMessage: (roomId: string, text: string) => Promise<void>
   sharePlace: (roomId: string, placeId: string) => Promise<void>
+  /** 실패한 메시지를 같은 번호표로 다시 보낸다 */
+  retryMessage: (clientId: string) => Promise<void>
+  /** 실패한 메시지를 지운다 (보내지 않는다) */
+  discardMessage: (clientId: string) => void
   loadOlderMessages: (roomId: string) => Promise<void>
   markRead: (roomId: string) => Promise<void>
 
@@ -219,7 +226,7 @@ type Actions = {
    * 서버가 내 채팅(또는 presence)을 거절했을 때. WebSocket(/user/queue/errors)과 REST 실패 양쪽에서 부른다.
    * 사용자에게는 알기 쉬운 알림을 띄우고, 필요하면 화면 데이터를 다시 불러온다.
    */
-  rejectChat: (roomId: string, code: string, message: string) => void
+  rejectChat: (roomId: string, code: string, message: string, clientMessageId?: string) => void
 
   /** WebSocket으로 받은 이벤트를 반영한다 */
   applyEvent: (roomId: string, event: TripEventDto) => void
@@ -236,6 +243,20 @@ type Actions = {
 }
 
 export type Store = DataState & ViewState & TransientState & Actions
+
+/** 보낸 메시지의 서버 확인을 기다리는 최대 시간. 지나면 실패로 보여주고 [재전송]을 띄운다. */
+const SEND_TIMEOUT_MS = 10000
+
+/** 보낸 메시지마다 확인을 기다리는 타이머 (번호표 -> 타이머) */
+const sendTimers = new Map<string, number>()
+
+/** 메시지 번호표. randomUUID는 https·localhost에서만 되므로 그 밖(폰으로 내부 IP 접속 등)에서는 직접 만든다. */
+function newClientId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID()
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+}
 
 /** 카드 등록 알림을 기다리는 최대 시간. 지나면 알림이 안 와도 채팅 공유를 풀어 준다. */
 const PENDING_TIMEOUT_MS = 5000
@@ -254,6 +275,7 @@ function emptyData(): DataState {
     places: [],
     items: [],
     messages: [],
+    outbox: [],
     sessionUserId: null,
     unread: {},
     hasOlder: {},
@@ -354,6 +376,7 @@ export const useStore = create<Store>()(
           places: state.places.filter((place) => place.roomId !== roomId),
           items: state.items.filter((item) => item.roomId !== roomId),
           messages: state.messages.filter((message) => message.roomId !== roomId),
+          outbox: state.outbox.filter((entry) => entry.roomId !== roomId),
         }))
 
       const putPlace = (dto: PlaceDto) =>
@@ -362,8 +385,87 @@ export const useStore = create<Store>()(
       const putItems = (dtos: ScheduleItemDto[]) =>
         set((state) => ({ items: upsert(state.items, dtos.map(toItem)) }))
 
-      const putMessages = (dtos: ChatMessageDto[]) =>
+      const putMessages = (dtos: ChatMessageDto[]) => {
         set((state) => ({ messages: mergeMessages(state.messages, dtos.map(toMessage)) }))
+        settleOutbox(dtos)
+      }
+
+      /**
+       * 서버에 저장된 게 확인된 내 메시지는 "전송 중/실패" 목록에서 뺀다.
+       * (시간이 지나 실패로 보였는데 사실은 저장됐던 경우도 여기서 정리된다)
+       */
+      const settleOutbox = (dtos: ChatMessageDto[]) => {
+        const confirmed = new Set(
+          dtos.map((dto) => dto.clientMessageId).filter((id): id is string => !!id)
+        )
+        if (confirmed.size === 0) return
+        for (const id of confirmed) {
+          window.clearTimeout(sendTimers.get(id))
+          sendTimers.delete(id)
+        }
+        set((state) =>
+          state.outbox.some((entry) => confirmed.has(entry.clientId))
+            ? { outbox: state.outbox.filter((entry) => !confirmed.has(entry.clientId)) }
+            : {}
+        )
+      }
+
+      const setOutboxStatus = (clientId: string, status: OutgoingMessage["status"]) => {
+        if (status === "failed") {
+          window.clearTimeout(sendTimers.get(clientId))
+          sendTimers.delete(clientId)
+        }
+        set((state) => ({
+          outbox: state.outbox.map((entry) =>
+            entry.clientId === clientId ? { ...entry, status } : entry
+          ),
+        }))
+      }
+
+      /**
+       * 보내기 (처음 보낼 때와 [재전송] 공통).
+       * 실시간 연결이 있으면 WebSocket으로 보내고 확인(CHAT_MESSAGE 이벤트)이나 거절(rejectChat)을 기다린다.
+       * 연결이 끊겨 있으면 REST로 보낸다. 어느 쪽이든 SEND_TIMEOUT_MS 안에 확인이 없으면 실패로 바꾼다.
+       */
+      const deliver = async (entry: OutgoingMessage) => {
+        const { roomId, clientId } = entry
+        setOutboxStatus(clientId, "sending")
+        window.clearTimeout(sendTimers.get(clientId))
+        sendTimers.set(
+          clientId,
+          window.setTimeout(() => {
+            sendTimers.delete(clientId)
+            if (get().outbox.some((candidate) => candidate.clientId === clientId)) {
+              setOutboxStatus(clientId, "failed")
+            }
+          }, SEND_TIMEOUT_MS)
+        )
+        const body =
+          entry.placeId !== undefined
+            ? { sharedPlaceId: Number(entry.placeId), clientMessageId: clientId }
+            : { content: entry.content ?? "", clientMessageId: clientId }
+        if (realtime.sendChat(roomId, body)) return
+        try {
+          putMessages([
+            await api<ChatMessageDto>("POST", `/api/trips/${roomId}/chat/messages`, body),
+          ])
+        } catch (error) {
+          console.warn("[chat] 전송 실패", error)
+          if (error instanceof ApiError) {
+            get().rejectChat(roomId, error.code, error.message, clientId)
+          } else {
+            setOutboxStatus(clientId, "failed")
+            notifyFailed(failure(error).message)
+          }
+        }
+      }
+
+      /** 새 메시지를 "전송 중"으로 화면에 바로 띄우고 보낸다 */
+      const enqueue = (draft: Omit<OutgoingMessage, "clientId" | "status">) => {
+        const entry: OutgoingMessage = { ...draft, clientId: newClientId(), status: "sending" }
+        set((state) => ({ outbox: [...state.outbox, entry] }))
+        return deliver(entry)
+      }
 
       const startSession = (user: UserDto) =>
         set((state) => ({
@@ -372,13 +474,6 @@ export const useStore = create<Store>()(
         }))
 
       /** 멤버가 아니게 된 방에서 온 거절이면 방을 비운다 */
-      /** 채팅 REST 요청 실패: 서버가 거절했으면 rejectChat으로, 연결 문제면 그 안내를 띄운다 */
-      const chatRequestFailed = (roomId: string, error: unknown) => {
-        console.warn("[chat] 전송 실패", error)
-        if (error instanceof ApiError) get().rejectChat(roomId, error.code, error.message)
-        else notifyFailed(failure(error).message)
-      }
-
       const handleFailure = (roomId: string | undefined, error: unknown) => {
         if (roomId && error instanceof ApiError && error.code === "NOT_TRIP_MEMBER") {
           dropRoom(roomId)
@@ -614,6 +709,8 @@ export const useStore = create<Store>()(
               ),
               presence: { ...state.presence, [roomId]: toPresence(presence) },
             }))
+            // 다시 연결돼서 불러온 경우: 그 사이 사실은 저장됐던 내 메시지를 "전송 중/실패"에서 뺀다
+            settleOutbox(chat.messages)
           } catch (error) {
             handleFailure(roomId, error)
           }
@@ -893,34 +990,24 @@ export const useStore = create<Store>()(
 
         /* ───────── 채팅 ───────── */
 
-        sendMessage: async (roomId, text) => {
-          // 실시간 연결이 있으면 WebSocket으로 보낸다. 내 메시지도 이벤트로 돌아와 화면에 뜬다.
-          // 거절되면 서버가 /user/queue/errors 로 알려 주고 rejectChat이 처리한다.
-          if (realtime.sendChat(roomId, { content: text })) return
-          try {
-            putMessages([
-              await api<ChatMessageDto>("POST", `/api/trips/${roomId}/chat/messages`, {
-                content: text,
-              }),
-            ])
-          } catch (error) {
-            chatRequestFailed(roomId, error)
-          }
+        sendMessage: (roomId, text) => enqueue({ roomId, content: text }),
+
+        sharePlace: (roomId, placeId) => enqueue({ roomId, placeId }),
+
+        retryMessage: async (clientId) => {
+          const entry = get().outbox.find((candidate) => candidate.clientId === clientId)
+          if (entry) await deliver(entry)
         },
 
-        sharePlace: async (roomId, placeId) => {
-          const body = { sharedPlaceId: Number(placeId) }
-          if (realtime.sendChat(roomId, body)) return
-          try {
-            putMessages([
-              await api<ChatMessageDto>("POST", `/api/trips/${roomId}/chat/messages`, body),
-            ])
-          } catch (error) {
-            chatRequestFailed(roomId, error)
-          }
+        discardMessage: (clientId) => {
+          window.clearTimeout(sendTimers.get(clientId))
+          sendTimers.delete(clientId)
+          set((state) => ({ outbox: state.outbox.filter((entry) => entry.clientId !== clientId) }))
         },
 
-        rejectChat: (roomId, code, message) => {
+        rejectChat: (roomId, code, message, clientMessageId) => {
+          // 그 말풍선은 지우지 않고 실패로 남겨 둔다 ([재전송]·[삭제])
+          if (clientMessageId) setOutboxStatus(clientMessageId, "failed")
           switch (code) {
             // 방에서 나가졌거나 내보내졌다. 방을 목록에서 빼면 방 화면이 방 목록으로 돌아간다.
             case "NOT_TRIP_MEMBER":
@@ -1007,6 +1094,7 @@ export const useStore = create<Store>()(
                       : { ...state.unread, [roomId]: (state.unread[roomId] ?? 0) + 1 },
                 }
               })
+              settleOutbox([event.payload])
               break
             }
             case "SCHEDULE_CHANGED": {

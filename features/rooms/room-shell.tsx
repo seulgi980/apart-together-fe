@@ -44,7 +44,8 @@ export function RoomShell({ children }: { children: React.ReactNode }) {
     realtime.connect(roomId, {
       onEvent: (id, event) => useStore.getState().applyEvent(id, event),
       onReconnect: (id) => void useStore.getState().loadRoom(id),
-      onRejected: (id, error) => useStore.getState().rejectChat(id, error.code, error.message),
+      onRejected: (id, error) =>
+        useStore.getState().rejectChat(id, error.code, error.message, error.clientMessageId),
       onForbidden: () => void useStore.getState().loadRooms(),
       currentDay: (id) => useStore.getState().dayByRoom[id] ?? 1,
     })

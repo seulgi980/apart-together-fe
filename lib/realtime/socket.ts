@@ -17,7 +17,10 @@ type Handlers = {
   /** 끊겼다가 다시 연결됐다. 그 사이 이벤트를 놓쳤을 수 있으니 방을 다시 불러온다. */
   onReconnect: (roomId: string) => void
   /** 내가 보낸 채팅·presence를 서버가 거절했다 */
-  onRejected: (roomId: string, error: { code: string; message: string }) => void
+  onRejected: (
+    roomId: string,
+    error: { code: string; message: string; clientMessageId?: string }
+  ) => void
   /** 이 방을 구독할 수 없다 (멤버가 아님) */
   onForbidden: (roomId: string) => void
   /** 지금 보고 있는 Day (연결 직후 "보는 중"을 알린다) */
@@ -78,10 +81,18 @@ export const realtime = {
       })
       stomp.subscribe("/user/queue/errors", (frame) => {
         try {
-          const error = JSON.parse(frame.body) as { code?: string; message?: string }
+          const error = JSON.parse(frame.body) as {
+            code?: string
+            message?: string
+            clientMessageId?: string
+          }
           // 원본은 개발자도구 콘솔에만 남기고, 사용자에게는 onRejected가 알기 쉬운 문구로 알린다
           console.warn("[realtime] 서버가 요청을 거절했습니다", error)
-          handlers?.onRejected(current, { code: error.code ?? "", message: error.message ?? "" })
+          handlers?.onRejected(current, {
+            code: error.code ?? "",
+            message: error.message ?? "",
+            clientMessageId: error.clientMessageId,
+          })
         } catch {
           // 알 수 없는 메시지는 무시한다
         }
@@ -112,7 +123,10 @@ export const realtime = {
   },
 
   /** 채팅 전송. 연결돼 있지 않으면 false (REST로 보낸다). */
-  sendChat(targetRoomId: string, body: { content: string } | { sharedPlaceId: number }): boolean {
+  sendChat(
+    targetRoomId: string,
+    body: ({ content: string } | { sharedPlaceId: number }) & { clientMessageId: string }
+  ): boolean {
     if (roomId !== targetRoomId) return false
     return publish(`/app/trips/${targetRoomId}/chat`, body)
   },

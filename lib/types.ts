@@ -133,6 +133,21 @@ export type ScheduleItem = {
   changeType?: "added" | "moved" | "time" | "edited"
 }
 
+/**
+ * 내가 보냈지만 서버 확인을 아직 못 받은 메시지 (보낸 사람 화면에만 있다).
+ * 서버가 받으면 같은 clientId의 진짜 메시지가 와서 이 항목은 사라진다.
+ */
+export type OutgoingMessage = {
+  /** 보낼 때 만든 번호표. 서버가 응답·이벤트·거절 알림에 그대로 돌려준다. [재전송]도 같은 번호표로 보낸다. */
+  clientId: string
+  roomId: string
+  /** sending: 전송 중 (흐리게) / failed: 실패 (재전송·삭제) */
+  status: "sending" | "failed"
+  /** 일반 메시지면 내용, 장소 카드 공유면 공유할 카드 */
+  content?: string
+  placeId?: string
+}
+
 export type ChatMessage = {
   id: string
   /** 서버의 메시지 번호. 순서 정렬과 이전 메시지 조회에 쓴다. */

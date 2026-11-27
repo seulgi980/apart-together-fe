@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva } from "class-variance-authority"
-import { MapPin } from "lucide-react"
+import { MapPin, RotateCw } from "lucide-react"
 
 import { MemberAvatar } from "@/components/app/member-avatar"
 import type { MemberView } from "@/lib/types"
@@ -10,6 +10,7 @@ import type { MemberView } from "@/lib/types"
  * - user: 멤버 아바타(핀 색 테두리) + 닉네임 · 시각 + 말풍선.
  *   내 메시지는 오른쪽에 브랜드 색 말풍선으로 보인다.
  *   말풍선은 패널 폭의 80%까지만 넓어지고, 띄어쓰기 없는 긴 글(링크 등)도 그 안에서 줄을 바꾼다.
+ *   내가 보낸 메시지가 서버 확인 전이면 흐리게 "전송 중", 실패하면 빨간 ⟳ 와 [재전송] [삭제]가 붙는다.
  * - system: 일정 변경 자동 기록. 가운데 정렬 알약.
  */
 type ChatMessageProps =
@@ -19,6 +20,8 @@ type ChatMessageProps =
       time: string
       /** 프로필 사진을 눌렀을 때 (멤버 프로필 열기) */
       onAvatarClick?: () => void
+      /** 내가 보낸 메시지의 전송 상태. 없으면 서버에 저장된 메시지 */
+      delivery?: { status: "sending" | "failed"; onRetry: () => void; onDiscard: () => void }
       children: React.ReactNode
     }
   | { variant: "system"; children: React.ReactNode }
@@ -64,6 +67,10 @@ export function ChatMessage(props: ChatMessageProps) {
     )
   }
   const side = props.member.isMe ? "mine" : "theirs"
+  const delivery = props.delivery
+  // 전송 중이면 시각 자리에 "전송 중…", 실패면 시각 없이 (아래에 실패 안내가 붙는다)
+  const timeLabel =
+    delivery?.status === "sending" ? "전송 중…" : delivery?.status === "failed" ? "" : props.time
   return (
     <li className={rowVariants({ side })}>
       {props.onAvatarClick ? (
@@ -81,9 +88,39 @@ export function ChatMessage(props: ChatMessageProps) {
       )}
       <div className={columnVariants({ side })}>
         <p className="text-caption text-brand-750">
-          {props.member.nickname} · {props.time}
+          {props.member.nickname}
+          {timeLabel && ` · ${timeLabel}`}
         </p>
-        <div className={bubbleVariants({ side })}>{props.children}</div>
+        <div className="flex max-w-full items-end gap-1.5">
+          {delivery?.status === "failed" && (
+            <RotateCw aria-hidden className="mb-2 size-4 shrink-0 text-error-text" />
+          )}
+          <div
+            className={bubbleVariants({ side, className: delivery?.status === "sending" && "opacity-60" })}
+            aria-busy={delivery?.status === "sending" || undefined}
+          >
+            {props.children}
+          </div>
+        </div>
+        {delivery?.status === "failed" && (
+          <p role="alert" className="flex items-center gap-2 text-caption text-error-text">
+            전송하지 못했어요
+            <button
+              type="button"
+              className="rounded-sm font-bold underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={delivery.onRetry}
+            >
+              재전송
+            </button>
+            <button
+              type="button"
+              className="rounded-sm text-brand-750 underline underline-offset-2 outline-none hover:text-brand-900 focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={delivery.onDiscard}
+            >
+              삭제
+            </button>
+          </p>
+        )}
       </div>
     </li>
   )

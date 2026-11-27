@@ -35,11 +35,14 @@ import { CHAT_PREVIEW_MAX } from "@/lib/domain/limits"
 /** 채팅 왼쪽(모바일은 채팅 위)에 띄우는 것: 멤버 프로필 또는 긴 메시지 전체 보기. 한 번에 하나만 뜬다. */
 type SidePanel = { kind: "profile"; userId: string } | { kind: "message"; messageId: string }
 
+/** 전송 중/실패 메시지의 화면용 id (서버 메시지 id와 겹치지 않게) */
+const outboxKey = (clientId: string) => `outbox-${clientId}`
+
 /** 채팅 내용: 메시지 목록 + 입력. 열려 있는 동안 읽음 처리한다. */
 function ChatBody({ roomId }: { roomId: string }) {
   const view = useRoom(roomId)
   const { places } = usePlaces(roomId)
-  const { messages, hasOlder, send, sharePlace, loadOlder, markRead } =
+  const { messages, outbox, hasOlder, send, sharePlace, loadOlder, markRead, retry, discard } =
     useChat(roomId)
 
   // 열려 있는 동안 새 메시지가 오면(내 시스템 메시지 포함) 마지막 메시지까지 바로 읽음 처리한다
@@ -81,9 +84,53 @@ function ChatBody({ roomId }: { roomId: string }) {
     )
   } else if (side?.kind === "message") {
     const message = messages.find((item) => item.id === side.messageId)
-    const member = message?.userId ? view.getMember(message.userId) : null
-    sideContent = message && member && (
-      <MessageFullView member={member} time={message.time} text={message.text} onClose={closeSide} />
+    const pending = outbox.find((entry) => outboxKey(entry.clientId) === side.messageId)
+    const member = message?.userId ? view.getMember(message.userId) : pending ? view.me : null
+    const text = message?.text ?? pending?.content
+    sideContent = member && text !== undefined && (
+      <MessageFullView
+        member={member}
+        time={message?.time ?? (pending?.status === "failed" ? "전송 실패" : "전송 중")}
+        text={text}
+        onClose={closeSide}
+      />
+    )
+  }
+
+  // 긴 메시지는 앞부분만 보여주고 [전체 보기]로 옆에 펼친다
+  const renderText = (id: string, text: string) => {
+    if (text.length <= CHAT_PREVIEW_MAX) return text
+    return (
+      <>
+        {`${Array.from(text).slice(0, CHAT_PREVIEW_MAX).join("")}…`}
+        <button
+          type="button"
+          data-chat-side-toggle
+          aria-expanded={side?.kind === "message" && side.messageId === id}
+          className="self-start rounded-sm text-caption font-bold text-brand-750 underline underline-offset-2 outline-none hover:text-brand-900 focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={() => toggleFullMessage(id)}
+        >
+          전체 보기
+        </button>
+      </>
+    )
+  }
+
+  const renderPlaceCard = (placeId: string | undefined) => {
+    const shared = placeId ? placeById.get(placeId) : undefined
+    return shared ? (
+      <Link
+        href={`/rooms/${roomId}/places/${shared.place.id}`}
+        draggable={false}
+        className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ChatPlaceCard
+          name={shared.place.name}
+          meta={placeMeta(shared.place.category, shared.place.area, shared.place.areaEn)}
+        />
+      </Link>
+    ) : (
+      <ChatPlaceCard name="삭제된 장소 카드" meta="더 이상 볼 수 없어요" />
     )
   }
   // 전체 보기는 내용을 길게 읽어야 해서 채팅 높이만큼, 프로필은 1/3만큼 띄운다
@@ -91,7 +138,7 @@ function ChatBody({ roomId }: { roomId: string }) {
 
   const panel = (
     <ChatPanel
-      messageCount={messages.length}
+      messageCount={messages.length + outbox.length}
       hasOlder={hasOlder}
       onLoadOlder={loadOlder}
       onSend={send}
@@ -111,9 +158,6 @@ function ChatBody({ roomId }: { roomId: string }) {
             </React.Fragment>
           )
         }
-        const shared = message.placeId ? placeById.get(message.placeId) : undefined
-        // 긴 메시지는 앞부분만 보여주고 [전체 보기]로 옆에 펼친다
-        const long = message.text.length > CHAT_PREVIEW_MAX
         return (
           <React.Fragment key={message.id}>
             {divider}
@@ -123,37 +167,35 @@ function ChatBody({ roomId }: { roomId: string }) {
               time={message.time}
               onAvatarClick={() => toggleProfile(message.userId!)}
             >
-              {long ? `${Array.from(message.text).slice(0, CHAT_PREVIEW_MAX).join("")}…` : message.text}
-              {long && (
-                <button
-                  type="button"
-                  data-chat-side-toggle
-                  aria-expanded={side?.kind === "message" && side.messageId === message.id}
-                  className="self-start rounded-sm text-caption font-bold text-brand-750 underline underline-offset-2 outline-none hover:text-brand-900 focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() => toggleFullMessage(message.id)}
-                >
-                  전체 보기
-                </button>
-              )}
-              {message.kind === "place" &&
-                (shared ? (
-                  <Link
-                    href={`/rooms/${roomId}/places/${shared.place.id}`}
-                    draggable={false}
-                    className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <ChatPlaceCard
-                      name={shared.place.name}
-                      meta={placeMeta(shared.place.category, shared.place.area, shared.place.areaEn)}
-                    />
-                  </Link>
-                ) : (
-                  <ChatPlaceCard name="삭제된 장소 카드" meta="더 이상 볼 수 없어요" />
-                ))}
+              {renderText(message.id, message.text)}
+              {message.kind === "place" && renderPlaceCard(message.placeId)}
             </ChatMessage>
           </React.Fragment>
         )
       })}
+      {outbox.map((entry) => (
+        <ChatMessage
+          key={outboxKey(entry.clientId)}
+          variant="user"
+          member={view.me}
+          time=""
+          onAvatarClick={() => toggleProfile(view.me.id)}
+          delivery={{
+            status: entry.status,
+            onRetry: () => retry(entry.clientId),
+            onDiscard: () => discard(entry.clientId),
+          }}
+        >
+          {entry.placeId !== undefined ? (
+            <>
+              장소 카드를 공유했어요
+              {renderPlaceCard(entry.placeId)}
+            </>
+          ) : (
+            renderText(outboxKey(entry.clientId), entry.content ?? "")
+          )}
+        </ChatMessage>
+      ))}
     </ChatPanel>
   )
 
