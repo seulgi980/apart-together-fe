@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CHAT_MESSAGE_MAX } from "@/lib/domain/limits"
+import { notifyFailed } from "@/lib/notify"
 
 /**
  * 채팅 패널의 틀: 메시지 목록 + 입력창.
@@ -50,6 +51,13 @@ export function ChatPanel({
     event.preventDefault()
     const trimmed = text.trim()
     if (!trimmed) return
+    // 너무 길면 보내지 않고 알린다. 입력한 글은 지우지 않아서 줄여서 다시 보낼 수 있다.
+    if (trimmed.length > CHAT_MESSAGE_MAX) {
+      notifyFailed(
+        `최대 ${CHAT_MESSAGE_MAX.toLocaleString()}자를 초과했습니다. (지금 ${trimmed.length.toLocaleString()}자)`
+      )
+      return
+    }
     onSend(trimmed)
     setText("")
   }
@@ -86,7 +94,6 @@ export function ChatPanel({
         <Input
           aria-label="메시지"
           placeholder="메시지를 입력하세요"
-          maxLength={CHAT_MESSAGE_MAX}
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
