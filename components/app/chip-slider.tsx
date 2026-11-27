@@ -88,7 +88,7 @@ export function ChipSlider({
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full"
+          className="size-8 rounded-full lg:size-9"
           aria-label={`이전 ${label} 보기`}
           disabled={current <= 0}
           onClick={() => setOffset(Math.max(0, current - step))}
@@ -110,7 +110,7 @@ export function ChipSlider({
       >
         <div
           ref={trackRef}
-          className="relative flex w-max translate-x-(--slide) items-center gap-3 px-1 transition-transform duration-700 ease-spring motion-reduce:transition-none"
+          className="relative flex w-max translate-x-(--slide) items-center gap-2 px-1 lg:gap-3 transition-transform duration-700 ease-spring motion-reduce:transition-none"
         >
           {children}
         </div>
@@ -119,7 +119,7 @@ export function ChipSlider({
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full"
+          className="size-8 rounded-full lg:size-9"
           aria-label={`다음 ${label} 보기`}
           disabled={current >= max}
           onClick={() => setOffset(Math.min(max, current + step))}

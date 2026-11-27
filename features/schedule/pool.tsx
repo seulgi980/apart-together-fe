@@ -32,7 +32,7 @@ const listVariants = cva("", {
 const cellVariants = cva("", {
   variants: {
     snap: {
-      collapsed: "w-48 shrink-0 lg:w-56",
+      collapsed: "w-40 shrink-0 lg:w-56",
       expanded: "min-w-0",
     },
   },
@@ -121,7 +121,7 @@ function PoolCard({
         <Button
           variant="ghost"
           size="icon"
-          className="-my-2 -mr-2 ml-auto"
+          className="-my-2 -mr-2 ml-auto size-8 lg:size-9"
           aria-label={`${entry.place.name} 일정에 추가`}
           onClick={(event) => {
             event.stopPropagation()

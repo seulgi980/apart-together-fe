@@ -28,9 +28,10 @@ export function DayChips({
     <ToggleGroup
       type="single"
       variant="chip"
+      size="sm"
       aria-label="Day 선택"
-      // 칩 위로 올라오는 "보는 중" 아바타가 잘리지 않도록 줄을 높게 잡는다
-      className="h-16 w-full px-4 lg:px-8"
+      // 칩 위로 올라오는 "보는 중" 아바타가 잘리지 않도록 줄을 칩보다 높게 잡는다
+      className="h-12 w-full px-4 lg:h-16 lg:px-8"
       value={String(active)}
       onValueChange={(next) => {
         if (next) onChange(Number(next))
@@ -44,7 +45,7 @@ export function DayChips({
 }
 
 /** 폭은 두 자리 Day(D99) 기준으로 고정해 D1과 D11의 크기가 같다 */
-const chipVariants = cva("relative w-14 px-0", {
+const chipVariants = cva("relative w-12 px-0 lg:w-14", {
   variants: {
     /** 장소 풀에서 고른 카드가 이 Day에 놓여 있다: 연한 핫핑크 테두리가 커졌다 작아졌다 한다 */
     pulsing: {
@@ -90,7 +91,7 @@ export function DayChip({
       D{day}
       {viewers.length > 0 && (
         <span
-          className="absolute -top-3 -right-1 flex items-center"
+          className="absolute -top-2 -right-1 flex items-center lg:-top-3"
           title={viewers.map((member) => member.nickname).join(", ")}
         >
           {/* 자리가 좁아 2명까지만 얼굴을 보이고, 3명부터는 1명 + "+나머지 수" */}

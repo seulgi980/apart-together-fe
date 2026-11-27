@@ -22,15 +22,16 @@ export function PersonTabs({
     <ToggleGroup
       type="single"
       variant="chip"
+      size="sm"
       aria-label="일정 선택"
-      className="h-12 w-full px-4 lg:px-8"
+      className="h-10 w-full px-4 lg:h-12 lg:px-8"
       value={active}
       onValueChange={(next) => {
         if (next) onChange(next)
       }}
     >
       <ToggleGroupItem value="shared">공동</ToggleGroupItem>
-      <span className="h-5 w-px shrink-0 bg-brand-350" aria-hidden />
+      <span className="h-4 w-px shrink-0 bg-brand-350 lg:h-5" aria-hidden />
       <ChipSlider label="멤버" revealKey={active}>
           {members.map((member) => (
             <ToggleGroupItem

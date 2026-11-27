@@ -129,7 +129,7 @@ function DragHandle({
       ref={ref}
       variant="ghost"
       size="icon"
-      className="-ml-2 cursor-grab touch-none text-brand-750 hover:bg-brand-250"
+      className="-ml-1.5 size-8 cursor-grab touch-none text-brand-750 hover:bg-brand-250 lg:-ml-2 lg:size-9"
       aria-label={label}
       {...props}
     >
@@ -240,9 +240,11 @@ function RowBody({
         )}
         {!readOnly && (
           <>
+            {/* 모바일은 장소명이 잘리지 않게 이 버튼을 빼고, 시간을 누르거나 ⋯ 메뉴에서 연다 */}
             <Button
               variant="outline"
               size="sm"
+              className="hidden lg:inline-flex"
               aria-label={`${entry.name} 시간·메모 편집`}
               onClick={() => onEditTime(entry)}
             >
@@ -254,13 +256,20 @@ function RowBody({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="-mr-2 text-brand-750"
+                  className="-mr-1.5 size-8 text-brand-750 lg:-mr-2 lg:size-9"
                   aria-label={`${entry.name} 메뉴`}
                 >
                   <MoreVertical />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="lg:hidden"
+                  onSelect={() => onEditTime(entry)}
+                >
+                  <Clock />
+                  시간·메모 편집
+                </DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <ArrowRightLeft />

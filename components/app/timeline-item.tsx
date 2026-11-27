@@ -85,7 +85,7 @@ function TimelineTime({
   if (!onClick || disabled) {
     return (
       <div
-        className="flex min-h-10 w-16 shrink-0 flex-col items-start lg:w-18"
+        className="flex min-h-8 w-12 shrink-0 flex-col items-start lg:min-h-10 lg:w-18"
         aria-label={label}
       >
         {content}
@@ -96,7 +96,7 @@ function TimelineTime({
     <Button
       variant="ghost"
       size="bare"
-      className="w-16 flex-col items-start justify-start gap-0 self-start lg:w-18"
+      className="min-h-8 w-12 flex-col items-start justify-start gap-0 self-start lg:min-h-10 lg:w-18"
       aria-label={`${label} · 시간 바꾸기`}
       onClick={onClick}
     >
@@ -106,7 +106,7 @@ function TimelineTime({
 }
 
 const dotVariants = cva(
-  "absolute top-2 left-1/2 size-3 -translate-x-1/2 rounded-full",
+  "absolute top-1 left-1/2 size-3 -translate-x-1/2 rounded-full lg:top-2",
   {
     variants: {
       variant: {
@@ -124,14 +124,14 @@ function TimelineRail() {
   const variant = React.useContext(TimelineContext)
   return (
     <div className="relative w-4 shrink-0" aria-hidden>
-      <span className="absolute top-0 -bottom-3 left-1/2 w-px -translate-x-1/2 bg-brand-350" />
+      <span className="absolute top-0 -bottom-2 left-1/2 w-px -translate-x-1/2 bg-brand-350 lg:-bottom-3" />
       <span className={dotVariants({ variant })} />
     </div>
   )
 }
 
 const cardVariants = cva(
-  "flex min-h-14 min-w-0 flex-1 items-center gap-2 rounded-lg lg:gap-3 px-3 py-2",
+  "flex min-h-12 min-w-0 flex-1 items-center gap-1.5 rounded-lg px-2.5 py-1.5 lg:min-h-14 lg:gap-3 lg:px-3 lg:py-2",
   {
     variants: {
       variant: {
@@ -162,7 +162,7 @@ function TimelineText({
 }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-start">
-      <p className="max-w-full truncate text-subtitle font-bold text-brand-900">
+      <p className="max-w-full truncate text-body font-bold text-brand-900 lg:text-subtitle">
         {name}
       </p>
       {sub && (

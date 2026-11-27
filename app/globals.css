@@ -102,8 +102,9 @@
   --text-body--line-height: 22px;
   --text-caption: 12px;
   --text-caption--line-height: 18px;
-  --text-time: 18px;
-  --text-time--line-height: 24px;
+  /* 모바일 타임라인 시간: 한 화면에 줄이 더 보이게 작게 (웹은 아래 lg 값) */
+  --text-time: 15px;
+  --text-time--line-height: 20px;
 
   /* 반경 */
   --radius-sm: 6px; /* 배지 */

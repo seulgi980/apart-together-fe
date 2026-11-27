@@ -12,10 +12,10 @@ import type { RoomView } from "@/hooks/use-room"
 import type { TimelineEntry } from "@/hooks/use-schedule"
 
 /** 타임라인이 차지하는 영역: 장소 풀 시트 위쪽 (시트 높이만큼 아래를 비운다) */
-const areaVariants = cva("absolute inset-x-0 top-0 p-2", {
+const areaVariants = cva("absolute inset-x-0 top-0 p-1 lg:p-2", {
   variants: {
     snap: {
-      collapsed: "bottom-56",
+      collapsed: "bottom-48 lg:bottom-56",
       expanded: "bottom-7/10",
     },
   },
@@ -30,8 +30,8 @@ const slotVariants = cva(
   {
     variants: {
       open: {
-        true: "h-20 py-3 opacity-100",
-        false: "h-3 py-0 opacity-0",
+        true: "h-16 py-2 opacity-100 lg:h-20 lg:py-3",
+        false: "h-2 py-0 opacity-0 lg:h-3",
       },
     },
   }

@@ -22,18 +22,22 @@ export function FilterChips<T extends string>({
   value,
   onChange,
   allowEmpty = false,
+  size = "default",
 }: {
   label: string
   options: ChipOption<T>[]
   value: T | null
   onChange: (value: T | null) => void
   allowEmpty?: boolean
+  /** sm: 모바일에서 칩을 작게 (일정 탭의 장소 풀). 웹은 같다. */
+  size?: "default" | "sm"
 }) {
   return (
     <ScrollArea orientation="horizontal" viewportClassName="pb-1.5 lg:pb-3">
       <ToggleGroup
         type="single"
         variant="chip"
+        size={size}
         aria-label={label}
         value={value ?? ""}
         onValueChange={(next) => {

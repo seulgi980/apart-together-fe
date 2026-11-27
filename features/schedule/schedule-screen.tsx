@@ -459,10 +459,10 @@ export function ScheduleScreen() {
       </div>
 
       <div className="mx-auto flex min-h-0 w-full max-w-timeline flex-1 flex-col bg-brand-50 lg:border-x lg:border-line">
-        <div className="flex shrink-0 flex-col gap-1 py-3 lg:py-4">
+        <div className="flex shrink-0 flex-col py-1.5 lg:gap-1 lg:py-4">
           <PersonTabs members={room.members} active={tab} onChange={setTab} />
 
-          <div className="flex h-8 shrink-0 items-center px-4 lg:px-8">
+          <div className="flex h-6 shrink-0 items-center px-4 lg:h-8 lg:px-8">
             <p className="truncate text-caption text-brand-750">
               {formatDayDate(room.room.startDate, day)} · Day {day}
             </p>
@@ -510,6 +510,7 @@ export function ScheduleScreen() {
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 px-2.5 lg:h-9 lg:px-3"
                 onClick={() => setDialog({ mode: "new-memo" })}
               >
                 <StickyNote />
@@ -519,6 +520,7 @@ export function ScheduleScreen() {
             }
             filters={
               <FilterChips
+                size="sm"
                 label="장소 풀 필터"
                 options={filterOptions}
                 value={activeFilter}

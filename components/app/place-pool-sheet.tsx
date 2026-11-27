@@ -17,15 +17,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 export type PoolSnap = "collapsed" | "expanded"
 
 /**
- * 패널 높이: 줄임은 224(손잡이 + 필터 줄 + 카드 한 줄이 다 들어가는 높이), 펼침은 영역 높이의 70%.
- * 줄임 높이를 바꾸면 timeline.tsx의 아래 여백(bottom-56)도 같이 바꾼다.
+ * 패널 높이: 줄임은 손잡이 + 필터 줄 + 카드 한 줄이 다 들어가는 높이 (모바일 192 / 웹 224),
+ * 펼침은 영역 높이의 70%.
+ * 줄임 높이를 바꾸면 timeline.tsx의 아래 여백(bottom-48 lg:bottom-56)도 같이 바꾼다.
  */
 const panelVariants = cva(
   "absolute inset-x-0 bottom-0 z-30 flex min-h-0 flex-col rounded-t-xl border-t border-brand-500 bg-brand-200 text-body text-brand-900",
   {
     variants: {
       snap: {
-        collapsed: "h-56",
+        collapsed: "h-48 lg:h-56",
         expanded: "h-7/10",
       },
       disabled: {
@@ -104,7 +105,7 @@ export function PlacePoolSheet({
       >
         {snap === "collapsed" ? <ChevronUp /> : <ChevronDown />}
       </Button>
-      <div className="flex shrink-0 flex-col gap-2 px-4 pb-2">
+      <div className="flex shrink-0 flex-col gap-2 px-4 pb-1 lg:pb-2">
         <div className={titleRowVariants({ snap })}>
           <h2 className="text-subtitle font-bold text-brand-900">
             장소 풀{" "}
