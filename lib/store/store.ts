@@ -36,6 +36,7 @@ import { countDays } from "@/lib/domain/dates"
 import { layoutSequence } from "@/lib/domain/schedule"
 import { notifyFailed } from "@/lib/notify"
 import { realtime } from "@/lib/realtime/socket"
+import { clearOutbox, loadOutbox, saveOutbox } from "@/lib/store/outbox-storage"
 import type {
   Category,
   ChatMessage,
@@ -461,17 +462,31 @@ export const useStore = create<Store>()(
       }
 
       /** 새 메시지를 "전송 중"으로 화면에 바로 띄우고 보낸다 */
-      const enqueue = (draft: Omit<OutgoingMessage, "clientId" | "status">) => {
-        const entry: OutgoingMessage = { ...draft, clientId: newClientId(), status: "sending" }
+      const enqueue = (draft: Omit<OutgoingMessage, "clientId" | "status" | "createdAt">) => {
+        const entry: OutgoingMessage = {
+          ...draft,
+          clientId: newClientId(),
+          status: "sending",
+          createdAt: Date.now(),
+        }
         set((state) => ({ outbox: [...state.outbox, entry] }))
         return deliver(entry)
       }
 
-      const startSession = (user: UserDto) =>
+      const startSession = (user: UserDto) => {
+        const userId = String(user.id)
+        // 새로고침 전에 남아 있던 전송 중/실패 메시지를 되살린다 (실패로 보이고 [재전송]할 수 있다).
+        // 사실 저장됐던 것은 방을 불러올 때 settleOutbox가 빼 준다.
+        const stored = loadOutbox(userId)
         set((state) => ({
-          sessionUserId: String(user.id),
+          sessionUserId: userId,
           users: mergeUsers(state.users, [toUser(user)]),
+          outbox: [
+            ...stored.filter((entry) => !state.outbox.some((own) => own.clientId === entry.clientId)),
+            ...state.outbox,
+          ],
         }))
+      }
 
       /** 멤버가 아니게 된 방에서 온 거절이면 방을 비운다 */
       const handleFailure = (roomId: string | undefined, error: unknown) => {
@@ -619,6 +634,9 @@ export const useStore = create<Store>()(
 
         logout: async () => {
           realtime.disconnect()
+          // 다음에 이 브라우저를 쓰는 사람에게 내 실패 메시지가 남지 않게 지운다
+          const me = get().sessionUserId
+          if (me) clearOutbox(me)
           await authApi.logout()
           set({ ...emptyData(), config: get().config, chatSheetOpen: false })
         },
@@ -672,6 +690,8 @@ export const useStore = create<Store>()(
               places: state.places.filter((place) => ids.has(place.roomId)),
               items: state.items.filter((item) => ids.has(item.roomId)),
               messages: state.messages.filter((message) => ids.has(message.roomId)),
+              // 나가졌거나 지워진 방의 전송 중/실패 메시지도 버린다
+              outbox: state.outbox.filter((entry) => ids.has(entry.roomId)),
             }))
           } catch {
             // 목록을 못 받으면 지금 가진 것을 그대로 둔다
@@ -1257,3 +1277,12 @@ export const useStore = create<Store>()(
     }
   )
 )
+
+// 전송 중/실패 메시지가 바뀔 때마다 브라우저 저장소에 보관한다 (로그인한 계정별로)
+if (typeof window !== "undefined") {
+  useStore.subscribe((state, previous) => {
+    if (state.outbox !== previous.outbox && state.sessionUserId) {
+      saveOutbox(state.sessionUserId, state.outbox)
+    }
+  })
+}

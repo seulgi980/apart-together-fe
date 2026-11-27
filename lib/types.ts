@@ -146,6 +146,8 @@ export type OutgoingMessage = {
   /** 일반 메시지면 내용, 장소 카드 공유면 공유할 카드 */
   content?: string
   placeId?: string
+  /** 처음 보낸 시각 (ms). 오래된 실패 메시지를 정리할 때 쓴다 */
+  createdAt: number
 }
 
 export type ChatMessage = {
