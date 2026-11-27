@@ -34,6 +34,7 @@ import {
 } from "@/lib/api/mappers"
 import { countDays } from "@/lib/domain/dates"
 import { layoutSequence } from "@/lib/domain/schedule"
+import { notifyFailed } from "@/lib/notify"
 import { realtime } from "@/lib/realtime/socket"
 import type {
   Category,
@@ -214,6 +215,12 @@ type Actions = {
   loadOlderMessages: (roomId: string) => Promise<void>
   markRead: (roomId: string) => Promise<void>
 
+  /**
+   * 서버가 내 채팅(또는 presence)을 거절했을 때. WebSocket(/user/queue/errors)과 REST 실패 양쪽에서 부른다.
+   * 사용자에게는 알기 쉬운 알림을 띄우고, 필요하면 화면 데이터를 다시 불러온다.
+   */
+  rejectChat: (roomId: string, code: string, message: string) => void
+
   /** WebSocket으로 받은 이벤트를 반영한다 */
   applyEvent: (roomId: string, event: TripEventDto) => void
 
@@ -365,6 +372,13 @@ export const useStore = create<Store>()(
         }))
 
       /** 멤버가 아니게 된 방에서 온 거절이면 방을 비운다 */
+      /** 채팅 REST 요청 실패: 서버가 거절했으면 rejectChat으로, 연결 문제면 그 안내를 띄운다 */
+      const chatRequestFailed = (roomId: string, error: unknown) => {
+        console.warn("[chat] 전송 실패", error)
+        if (error instanceof ApiError) get().rejectChat(roomId, error.code, error.message)
+        else notifyFailed(failure(error).message)
+      }
+
       const handleFailure = (roomId: string | undefined, error: unknown) => {
         if (roomId && error instanceof ApiError && error.code === "NOT_TRIP_MEMBER") {
           dropRoom(roomId)
@@ -881,6 +895,7 @@ export const useStore = create<Store>()(
 
         sendMessage: async (roomId, text) => {
           // 실시간 연결이 있으면 WebSocket으로 보낸다. 내 메시지도 이벤트로 돌아와 화면에 뜬다.
+          // 거절되면 서버가 /user/queue/errors 로 알려 주고 rejectChat이 처리한다.
           if (realtime.sendChat(roomId, { content: text })) return
           try {
             putMessages([
@@ -889,7 +904,7 @@ export const useStore = create<Store>()(
               }),
             ])
           } catch (error) {
-            handleFailure(roomId, error)
+            chatRequestFailed(roomId, error)
           }
         },
 
@@ -901,7 +916,29 @@ export const useStore = create<Store>()(
               await api<ChatMessageDto>("POST", `/api/trips/${roomId}/chat/messages`, body),
             ])
           } catch (error) {
-            handleFailure(roomId, error)
+            chatRequestFailed(roomId, error)
+          }
+        },
+
+        rejectChat: (roomId, code, message) => {
+          switch (code) {
+            // 방에서 나가졌거나 내보내졌다. 방을 목록에서 빼면 방 화면이 방 목록으로 돌아간다.
+            case "NOT_TRIP_MEMBER":
+            case "KICKED_MEMBER":
+              notifyFailed("이 여행방에 더 이상 참여하고 있지 않아요.")
+              dropRoom(roomId)
+              return
+            // 공유하려던 카드가 그 사이 지워졌다. 카드 목록을 다시 불러와 [+] 목록에서도 빠지게 한다.
+            case "SHARE_NOT_ALLOWED":
+            case "PLACE_NOT_FOUND":
+              notifyFailed("이미 삭제된 장소 카드예요.")
+              void get().loadRoom(roomId)
+              return
+            // "지금 보는 Day" 알림이 거절된 것. 사용자가 한 일이 아니라서 알리지 않는다.
+            case "INVALID_DAY":
+              return
+            default:
+              notifyFailed(message || "메시지를 보내지 못했어요.")
           }
         },
 
