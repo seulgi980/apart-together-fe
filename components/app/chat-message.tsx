@@ -9,6 +9,7 @@ import type { MemberView } from "@/lib/types"
  * 채팅 메시지 (F6-3, F6-5).
  * - user: 멤버 아바타(핀 색 테두리) + 닉네임 · 시각 + 말풍선.
  *   내 메시지는 오른쪽에 브랜드 색 말풍선으로 보인다.
+ *   말풍선은 패널 폭의 80%까지만 넓어지고, 띄어쓰기 없는 긴 글(링크 등)도 그 안에서 줄을 바꾼다.
  * - system: 일정 변경 자동 기록. 가운데 정렬 알약.
  */
 type ChatMessageProps =
@@ -31,7 +32,7 @@ const rowVariants = cva("flex items-start gap-3", {
   },
 })
 
-const columnVariants = cva("flex min-w-0 flex-col gap-1", {
+const columnVariants = cva("flex min-w-0 max-w-[80%] flex-col gap-1", {
   variants: {
     side: {
       mine: "items-end",
@@ -41,7 +42,7 @@ const columnVariants = cva("flex min-w-0 flex-col gap-1", {
 })
 
 const bubbleVariants = cva(
-  "flex flex-col gap-2 rounded-lg px-3 py-2 text-body break-words text-brand-900",
+  "flex max-w-full flex-col gap-2 rounded-lg px-3 py-2 text-body whitespace-pre-wrap wrap-anywhere text-brand-900",
   {
     variants: {
       side: {

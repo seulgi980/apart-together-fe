@@ -6,6 +6,7 @@ import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { CHAT_MESSAGE_MAX } from "@/lib/domain/limits"
 
 /**
  * 채팅 패널의 틀: 메시지 목록 + 입력창.
@@ -85,6 +86,7 @@ export function ChatPanel({
         <Input
           aria-label="메시지"
           placeholder="메시지를 입력하세요"
+          maxLength={CHAT_MESSAGE_MAX}
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
