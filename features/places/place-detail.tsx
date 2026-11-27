@@ -23,6 +23,7 @@ import { StatusLabel } from "@/components/app/status-label"
 import { VoteButtons } from "@/components/app/vote-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -176,7 +177,7 @@ export function PlaceDetail({
         }
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1">
         <div className="flex flex-col gap-6 p-4 lg:gap-8 lg:p-5">
           <PlaceGoogleInfoPanel roomId={roomId} placeId={place.id} />
           {/* 장소 정보: 흰 카드 한 장. 메모도 이 안에 두어 참고자료 카드와 같은 흰 바탕 위에 놓인다 */}
@@ -295,7 +296,7 @@ export function PlaceDetail({
             )}
           </section>
         </div>
-      </div>
+      </ScrollArea>
 
       {sharedItem && (
         <div className="flex shrink-0 items-center justify-between gap-3 border-t border-line bg-brand-50 px-4 py-3 lg:px-5">

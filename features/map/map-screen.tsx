@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   hasCoordinates,
   useMapPins,
@@ -200,7 +201,7 @@ function MapView({ room }: { room: RoomView }) {
         className="hidden w-maplist shrink-0 flex-col border-r border-line bg-brand-50 lg:flex"
       >
         {dayChips}
-        <div className="min-h-0 flex-1 overflow-y-auto border-t border-line">
+        <ScrollArea className="flex-1 border-t border-line">
           <div className="flex flex-col gap-8 p-8">
             <ScheduleList
               title={`공동 일정 · Day ${day}`}
@@ -226,7 +227,7 @@ function MapView({ room }: { room: RoomView }) {
               ),
             )}
           </div>
-        </div>
+        </ScrollArea>
       </aside>
 
       {/* 지도 */}

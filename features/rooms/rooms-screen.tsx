@@ -14,6 +14,7 @@ import { ScreenSkeleton } from "@/components/app/screen-skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { ProfileMenu } from "@/features/rooms/profile-menu"
 import { RoomFormDialog } from "@/features/rooms/room-form-dialog"
 import { formatUnread } from "@/hooks/use-chat"
@@ -99,7 +100,7 @@ export function RoomsScreen() {
         wide
         actions={<ProfileMenu me={me} />}
       />
-      <main className="min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1">
         <div className="mx-auto flex w-full max-w-timeline flex-col gap-6 p-4 lg:gap-8 lg:p-8">
           <section className="flex flex-col gap-3 lg:gap-4">
             <div className="flex items-center justify-between gap-3">
@@ -183,7 +184,7 @@ export function RoomsScreen() {
             </form>
           </section>
         </div>
-      </main>
+      </ScrollArea>
 
       <RoomFormDialog
         open={createOpen}

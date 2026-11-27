@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/app/confirm-dialog"
 import { MemberAvatar } from "@/components/app/member-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   RoomFormDialog,
   type RoomFormValue,
@@ -146,7 +147,7 @@ export function RoomSettingsScreen() {
       <div className="lg:hidden">
         <AppHeader title="방 설정" backHref={`/rooms/${roomId}/schedule`} />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1">
         <div className="mx-auto flex w-full max-w-timeline flex-col gap-6 p-4 lg:gap-8 lg:p-8">
           <SettingsSection
             title="방 정보"
@@ -266,7 +267,7 @@ export function RoomSettingsScreen() {
             )}
           </div>
         </div>
-      </div>
+      </ScrollArea>
       {/* 설정을 다 봤으면 일정 화면으로 간다 (방을 만든 직후에도 이 화면이 먼저 뜬다) */}
       <div className="shrink-0 border-t border-line bg-brand-50 p-4 lg:px-8">
         <div className="mx-auto flex w-full max-w-timeline justify-end">

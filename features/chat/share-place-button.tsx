@@ -6,6 +6,7 @@ import { MapPin, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { PlaceView } from "@/hooks/use-places"
 import { placeMeta } from "@/lib/domain/labels"
 import { useStore } from "@/lib/store/store"
@@ -65,33 +66,35 @@ export function SharePlaceButton({
             {keyword ? "찾는 장소가 없어요." : "올릴 수 있는 장소 카드가 없어요."}
           </p>
         ) : (
-          <ul className="flex max-h-60 flex-col gap-1 overflow-y-auto">
-            {candidates.map(({ place }) => (
-              <li key={place.id}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="bare"
-                  className="w-full justify-start px-2 py-2 text-left"
-                  onClick={() => {
-                    onShare(place.id)
-                    setOpen(false)
-                    setQuery("")
-                  }}
-                >
-                  <MapPin className="text-brand-750" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-body font-medium text-brand-900">
-                      {place.name}
+          <ScrollArea viewportClassName="max-h-60 pr-2 lg:pr-3">
+            <ul className="flex flex-col gap-1">
+              {candidates.map(({ place }) => (
+                <li key={place.id}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="bare"
+                    className="w-full justify-start px-2 py-2 text-left"
+                    onClick={() => {
+                      onShare(place.id)
+                      setOpen(false)
+                      setQuery("")
+                    }}
+                  >
+                    <MapPin className="text-brand-750" />
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate text-body font-medium text-brand-900">
+                        {place.name}
+                      </span>
+                      <span className="truncate text-caption font-normal text-brand-750">
+                        {placeMeta(place.category, place.area, place.areaEn)}
+                      </span>
                     </span>
-                    <span className="truncate text-caption font-normal text-brand-750">
-                      {placeMeta(place.category, place.area, place.areaEn)}
-                    </span>
-                  </span>
-                </Button>
-              </li>
-            ))}
-          </ul>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
         )}
       </PopoverContent>
     </Popover>

@@ -6,6 +6,7 @@ import { cva } from "class-variance-authority"
 import { ChevronDown, ChevronUp } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 /**
  * 일정 화면의 장소 풀 (F4-4). 타임라인 영역 아래쪽에 붙어 있는 패널이다.
@@ -45,12 +46,15 @@ const titleRowVariants = cva("items-center justify-between gap-3", {
   },
 })
 
-/* pt-3: 고른 카드가 커지고 위에 "선택됨" 배지가 붙어도 잘리지 않게 위쪽에 여유를 둔다 */
-const listAreaVariants = cva("min-h-0 flex-1 px-4 pt-3", {
+/*
+ * pt-3: 고른 카드가 커지고 위에 "선택됨" 배지가 붙어도 잘리지 않게 위쪽에 여유를 둔다.
+ * 줄임은 가로 스크롤(막대가 아래), 펼침은 세로 스크롤(막대가 오른쪽)이라 막대 쪽 여백을 막대 두께보다 넉넉히 둔다.
+ */
+const listAreaVariants = cva("px-4 pt-3", {
   variants: {
     snap: {
-      collapsed: "overflow-x-auto overflow-y-hidden pb-2",
-      expanded: "overflow-x-hidden overflow-y-auto pb-4",
+      collapsed: "pb-2 lg:pb-4",
+      expanded: "pb-4",
     },
   },
 })
@@ -117,7 +121,14 @@ export function PlacePoolSheet({
           {action && <div className="shrink-0">{action}</div>}
         </div>
       </div>
-      <div className={listAreaVariants({ snap })}>{children}</div>
+      <ScrollArea
+        key={snap}
+        orientation={snap === "collapsed" ? "horizontal" : "vertical"}
+        className="flex-1"
+        viewportClassName={listAreaVariants({ snap })}
+      >
+        {children}
+      </ScrollArea>
     </section>,
     container
   )

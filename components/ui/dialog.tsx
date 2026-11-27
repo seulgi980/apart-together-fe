@@ -6,6 +6,7 @@ import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 function Dialog({
   ...props
@@ -61,12 +62,15 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed inset-x-4 top-1/2 z-50 mx-auto flex max-h-5/6 max-w-md -translate-y-1/2 flex-col gap-4 overflow-y-auto rounded-xl bg-popover p-5 text-body text-popover-foreground shadow-pop duration-100 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+          "fixed inset-x-4 top-1/2 z-50 mx-auto flex max-w-md -translate-y-1/2 flex-col overflow-hidden rounded-xl bg-popover text-body text-popover-foreground shadow-pop duration-100 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
           className
         )}
         {...props}
       >
-        {children}
+        {/* 내용이 화면 높이의 5/6보다 길면 창 안에서 스크롤한다 (사이트 공통 ScrollArea, 폰에서도 핑크 막대) */}
+        <ScrollArea viewportClassName="max-h-[calc(100dvh*5/6)]">
+          <div className="flex flex-col gap-4 p-5">{children}</div>
+        </ScrollArea>
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button

@@ -6,6 +6,7 @@ import { CalendarPlus, Lock } from "lucide-react"
 
 import { EmptyState } from "@/components/app/empty-state"
 import type { PoolSnap } from "@/components/app/place-pool-sheet"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { TimelineRow, type RowHandlers } from "@/features/schedule/timeline-row"
 import type { RoomView } from "@/hooks/use-room"
 import type { TimelineEntry } from "@/hooks/use-schedule"
@@ -75,7 +76,11 @@ export function Timeline({
 
   return (
     <div className={areaVariants({ snap })}>
-      <div ref={zoneRef} className="h-full overflow-y-auto px-2 py-2 lg:px-6">
+      <ScrollArea
+        viewportRef={zoneRef}
+        className="h-full"
+        viewportClassName="px-2 py-2 lg:px-6"
+      >
         <div className="flex flex-col gap-3">
           {readOnly && (
             <p className="flex items-center gap-2 rounded-md bg-brand-250 px-3 py-2 text-caption text-brand-750">
@@ -106,7 +111,7 @@ export function Timeline({
             </ol>
           )}
         </div>
-      </div>
+      </ScrollArea>
     </div>
   )
 }

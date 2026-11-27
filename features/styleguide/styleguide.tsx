@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { VoteSummary } from "@/lib/domain/status"
 import { notifyChanged } from "@/lib/notify"
 import type {
@@ -112,7 +113,7 @@ export function Styleguide() {
   const [dialog, setDialog] = React.useState(false)
 
   return (
-    <main className="min-h-0 flex-1 overflow-y-auto">
+    <ScrollArea className="flex-1">
       <div className="mx-auto flex w-full max-w-timeline flex-col gap-8 p-4 lg:p-8">
         <header className="flex flex-col gap-1">
           <h1 className="text-display font-bold text-brand-900">스타일 가이드</h1>
@@ -404,7 +405,7 @@ export function Styleguide() {
           />
         </Section>
       </div>
-    </main>
+    </ScrollArea>
   )
 }
 

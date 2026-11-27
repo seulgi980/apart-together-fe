@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/app/empty-state";
 import { FilterChips, type ChipOption } from "@/components/app/filter-chips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { AddPlaceDialog } from "@/features/places/add-place-dialog";
 import { PlaceListCard } from "@/features/places/place-list-card";
 import { usePlaces } from "@/hooks/use-places";
@@ -156,7 +157,11 @@ export function PlaceList({
         />
       </div>
 
-      <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea
+        viewportRef={scrollRef}
+        className="flex-1"
+        viewportClassName="relative"
+      >
         <div className="p-4 lg:p-8">
           {filtered.length === 0 ? (
             <EmptyState
@@ -190,7 +195,7 @@ export function PlaceList({
           )}
           <div ref={sentinelRef} className="h-px" aria-hidden />
         </div>
-      </div>
+      </ScrollArea>
 
       <AddPlaceDialog
         key={addState.link}
