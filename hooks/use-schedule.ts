@@ -169,9 +169,8 @@ export function useScheduleActions(roomId: string, owner: ScheduleOwner) {
         )
       },
       async addMemo(input: { day: number; title: string; start?: string; end?: string }) {
-        return once(`memo:${roomId}:${owner}`, async () =>
-          notifyScheduleResult(await store.addMemoItem({ roomId, owner, ...input }))
-        )
+        // 연타는 항목 창의 버튼 잠금(useSubmit)이 막는다
+        return notifyScheduleResult(await store.addMemoItem({ roomId, owner, ...input }))
       },
       async update(
         itemId: string,

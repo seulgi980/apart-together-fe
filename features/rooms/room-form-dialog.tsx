@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useSubmit } from "@/hooks/use-submit"
 import { countDays, formatPeriod, MAX_TRIP_DAYS } from "@/lib/domain/dates"
 
 /** 여행 제목 최대 글자 수 */
@@ -23,7 +24,7 @@ const TITLE_MAX = 30
 
 export type RoomFormValue = { title: string; startDate: string; endDate: string }
 
-/** 여행방 만들기 / 방 정보 수정: 제목, 시작일, 종료일 (F1-8) */
+/** 여행방 만들기 / 방 정보 수정: 제목, 시작일, 종료일 (F1-8). 저장되면 닫히고, 실패하면 입력을 남긴다. */
 export function RoomFormDialog({
   open,
   onOpenChange,
@@ -34,19 +35,15 @@ export function RoomFormDialog({
   onOpenChange: (open: boolean) => void
   /** 있으면 수정, 없으면 새로 만들기 */
   initial?: RoomFormValue
-  onSubmit: (value: RoomFormValue) => void
+  /** 성공하면 true (창을 닫는다) */
+  onSubmit: (value: RoomFormValue) => Promise<boolean>
 }) {
+  const { pending, run } = useSubmit(onSubmit, () => onOpenChange(false))
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         {open && (
-          <RoomForm
-            initial={initial}
-            onSubmit={(value) => {
-              onSubmit(value)
-              onOpenChange(false)
-            }}
-          />
+          <RoomForm initial={initial} pending={pending} onSubmit={run} />
         )}
       </DialogContent>
     </Dialog>
@@ -55,9 +52,11 @@ export function RoomFormDialog({
 
 function RoomForm({
   initial,
+  pending,
   onSubmit,
 }: {
   initial?: RoomFormValue
+  pending: boolean
   onSubmit: (value: RoomFormValue) => void
 }) {
   const [title, setTitle] = React.useState(initial?.title ?? "")
@@ -130,8 +129,8 @@ function RoomForm({
         )}
       </div>
       <DialogFooter>
-        <Button type="submit" disabled={!ready}>
-          {initial ? "저장" : "만들기"}
+        <Button type="submit" disabled={pending || !ready}>
+          {pending ? "저장 중…" : initial ? "저장" : "만들기"}
         </Button>
       </DialogFooter>
       <ConfirmDialog

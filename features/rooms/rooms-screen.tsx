@@ -193,10 +193,11 @@ export function RoomsScreen() {
           const roomId = await createRoom(value)
           if (!roomId) {
             notifyFailed("여행방을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.")
-            return
+            return false
           }
           notifyChanged()
           router.push(`/rooms/${roomId}/settings`)
+          return true
         }}
       />
       <ConfirmDialog

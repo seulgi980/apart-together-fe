@@ -51,6 +51,8 @@ export function RoomSettingsScreen() {
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [confirm, setConfirm] = React.useState<Confirm | null>(null)
+  /** 방 수정 창이 기간 확인 결과를 기다리는 중이면, 그 결과를 넘겨줄 함수 */
+  const periodAnswer = React.useRef<((saved: boolean) => void) | null>(null)
 
   if (!view) return null
   const { room, members, me, isOwner, days } = view
@@ -58,9 +60,8 @@ export function RoomSettingsScreen() {
   const inviteLink = `/invite/${room.inviteCode}`
 
   /** confirmedDelete: 사라지는 Day의 일정을 지워도 된다고 확인받았는지 */
-  const applyRoom = (value: RoomFormValue, confirmedDelete: boolean) => {
-    void store.updateRoom(roomId, value, confirmedDelete).then(notifyResult)
-  }
+  const applyRoom = async (value: RoomFormValue, confirmedDelete: boolean) =>
+    notifyResult(await store.updateRoom(roomId, value, confirmedDelete))
 
   const submitRoom = (value: RoomFormValue) => {
     // 기간을 줄여 일정이 있는 Day가 사라지면 확인 후 삭제한다 (F1-8)
@@ -70,11 +71,18 @@ export function RoomSettingsScreen() {
         .filter((item) => item.roomId === roomId && item.day > nextDays)
         .map((item) => item.day)
     )
-    if (lost.size > 0) {
-      setConfirm({ kind: "period", value, lostDays: lost.size })
-    } else {
-      applyRoom(value, false)
-    }
+    if (lost.size === 0) return applyRoom(value, false)
+    // 확인 창에서 [삭제]하면 저장 결과를, [취소]하면 false를 돌려준다 (취소하면 수정 창은 입력 그대로 남는다)
+    setConfirm({ kind: "period", value, lostDays: lost.size })
+    return new Promise<boolean>((resolve) => {
+      periodAnswer.current = resolve
+    })
+  }
+
+  /** 기간 확인 창을 닫을 때 기다리던 방 수정 창에 결과를 넘긴다 */
+  const answerPeriod = (saved: boolean) => {
+    periodAnswer.current?.(saved)
+    periodAnswer.current = null
   }
 
   const copyInvite = async () => {
@@ -89,7 +97,13 @@ export function RoomSettingsScreen() {
 
   const runConfirm = () => {
     if (!confirm) return
-    if (confirm.kind === "period") applyRoom(confirm.value, true)
+    if (confirm.kind === "period") {
+      const value = confirm.value
+      // 확인 창이 닫히며 취소로 처리되지 않게 먼저 떼어 둔다
+      const answer = periodAnswer.current
+      periodAnswer.current = null
+      void applyRoom(value, true).then((saved) => answer?.(saved))
+    }
     if (confirm.kind === "invite") {
       void store.regenerateInvite(roomId).then(notifyResult)
     }
@@ -290,7 +304,10 @@ export function RoomSettingsScreen() {
       <ConfirmDialog
         open={confirm !== null}
         onOpenChange={(open) => {
-          if (!open) setConfirm(null)
+          if (!open) {
+            setConfirm(null)
+            answerPeriod(false)
+          }
         }}
         title={confirm ? confirmText[confirm.kind].title : ""}
         description={confirm ? confirmText[confirm.kind].description : undefined}

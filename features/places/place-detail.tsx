@@ -321,13 +321,11 @@ export function PlaceDetail({
         open={referenceForm.open}
         initial={referenceForm.editing}
         onOpenChange={(open) => setReferenceForm((state) => ({ ...state, open }))}
-        onSubmit={(draft) => {
-          if (referenceForm.editing) {
-            actions.updateReference(place.id, referenceForm.editing.id, draft)
-          } else {
-            actions.addReference(place.id, draft)
-          }
-        }}
+        onSubmit={(draft) =>
+          referenceForm.editing
+            ? actions.updateReference(place.id, referenceForm.editing.id, draft)
+            : actions.addReference(place.id, draft)
+        }
       />
       <ConfirmDialog
         open={deleteOpen}

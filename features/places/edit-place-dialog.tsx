@@ -16,13 +16,14 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { useSubmit } from "@/hooks/use-submit"
 import { CATEGORIES, CATEGORY_LABEL } from "@/lib/domain/labels"
 import type { Category, Place } from "@/lib/types"
 import { MEMO_MAX } from "@/lib/domain/limits"
 
 type PlacePatch = { name: string; category: Category; memo?: string }
 
-/** 장소 카드 수정: 장소명, 카테고리, 한 줄 메모 (F2-6) */
+/** 장소 카드 수정: 장소명, 카테고리, 한 줄 메모 (F2-6). 저장되면 닫히고, 실패하면 입력을 남긴다. */
 export function EditPlaceDialog({
   place,
   open,
@@ -32,19 +33,15 @@ export function EditPlaceDialog({
   place: Place
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (patch: PlacePatch) => void
+  /** 성공하면 true (창을 닫는다) */
+  onSubmit: (patch: PlacePatch) => Promise<boolean>
 }) {
+  const { pending, run } = useSubmit(onSubmit, () => onOpenChange(false))
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         {open && (
-          <EditPlaceForm
-            place={place}
-            onSubmit={(patch) => {
-              onSubmit(patch)
-              onOpenChange(false)
-            }}
-          />
+          <EditPlaceForm place={place} pending={pending} onSubmit={run} />
         )}
       </DialogContent>
     </Dialog>
@@ -53,9 +50,11 @@ export function EditPlaceDialog({
 
 function EditPlaceForm({
   place,
+  pending,
   onSubmit,
 }: {
   place: Place
+  pending: boolean
   onSubmit: (patch: PlacePatch) => void
 }) {
   const [name, setName] = React.useState(place.name)
@@ -117,8 +116,8 @@ function EditPlaceForm({
         />
       </FormField>
       <DialogFooter>
-        <Button type="submit" disabled={!name.trim()}>
-          저장
+        <Button type="submit" disabled={pending || !name.trim()}>
+          {pending ? "저장 중…" : "저장"}
         </Button>
       </DialogFooter>
     </form>

@@ -142,7 +142,7 @@ function ProfileForm({ onDone }: { onDone: () => void }) {
       </FormField>
       <DialogFooter>
         <Button type="submit" disabled={error !== null || pending}>
-          저장
+          {pending ? "저장 중…" : "저장"}
         </Button>
       </DialogFooter>
     </form>

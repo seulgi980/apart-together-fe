@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useSubmit } from "@/hooks/use-submit"
 import { getDomain, isHttpUrl } from "@/lib/domain/labels"
 import type { ReferenceDraft } from "@/lib/store/store"
 import type { Reference } from "@/lib/types"
 import { MEMO_MAX } from "@/lib/domain/limits"
 
-/** 참고자료 추가/수정 폼 (F2-4). 어떤 링크든 추가할 수 있다. */
+/** 참고자료 추가/수정 폼 (F2-4). 어떤 링크든 추가할 수 있다. 저장되면 닫히고, 실패하면 입력을 남긴다. */
 export function ReferenceFormDialog({
   open,
   onOpenChange,
@@ -30,19 +31,15 @@ export function ReferenceFormDialog({
   onOpenChange: (open: boolean) => void
   /** 있으면 수정 */
   initial?: Reference
-  onSubmit: (draft: ReferenceDraft) => void
+  /** 성공하면 true (창을 닫는다) */
+  onSubmit: (draft: ReferenceDraft) => Promise<boolean>
 }) {
+  const { pending, run } = useSubmit(onSubmit, () => onOpenChange(false))
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         {open && (
-          <ReferenceForm
-            initial={initial}
-            onSubmit={(draft) => {
-              onSubmit(draft)
-              onOpenChange(false)
-            }}
-          />
+          <ReferenceForm initial={initial} pending={pending} onSubmit={run} />
         )}
       </DialogContent>
     </Dialog>
@@ -51,9 +48,11 @@ export function ReferenceFormDialog({
 
 function ReferenceForm({
   initial,
+  pending,
   onSubmit,
 }: {
   initial?: Reference
+  pending: boolean
   onSubmit: (draft: ReferenceDraft) => void
 }) {
   const [url, setUrl] = React.useState(initial?.url ?? "")
@@ -128,8 +127,8 @@ function ReferenceForm({
         />
       </FormField>
       <DialogFooter>
-        <Button type="submit" disabled={!url.trim() || !title.trim()}>
-          {initial ? "저장" : "추가"}
+        <Button type="submit" disabled={pending || !url.trim() || !title.trim()}>
+          {pending ? "저장 중…" : initial ? "저장" : "추가"}
         </Button>
       </DialogFooter>
     </form>

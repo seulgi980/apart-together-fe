@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { useSubmit } from "@/hooks/use-submit"
 import {
   formatGap,
   isValidRange,
@@ -76,6 +77,7 @@ export function ItemDialog({
   onClose: () => void
   onSubmit: (value: ItemDialogValue) => Promise<boolean>
 }) {
+  const { pending, run } = useSubmit(onSubmit, onClose)
   return (
     <Dialog
       open={state.mode !== "closed"}
@@ -85,13 +87,7 @@ export function ItemDialog({
     >
       <DialogContent>
         {state.mode !== "closed" && (
-          <ItemForm
-            state={state}
-            day={day}
-            onSubmit={async (value) => {
-              if (await onSubmit(value)) onClose()
-            }}
-          />
+          <ItemForm state={state} day={day} pending={pending} onSubmit={run} />
         )}
       </DialogContent>
     </Dialog>
@@ -115,10 +111,12 @@ function describe(
 
 function ItemForm({
   state,
+  pending,
   day,
   onSubmit,
 }: {
   state: Exclude<ItemDialogState, { mode: "closed" }>
+  pending: boolean
   day: number
   onSubmit: (value: ItemDialogValue) => void
 }) {
@@ -224,7 +222,7 @@ function ItemForm({
           <Button
             type="button"
             variant="outline"
-            disabled={isMemo && title.trim().length === 0}
+            disabled={pending || (isMemo && title.trim().length === 0)}
             onClick={() =>
               onSubmit({ title: isMemo ? title.trim() : undefined })
             }
@@ -244,8 +242,8 @@ function ItemForm({
             시간 미정으로
           </Button>
         )}
-        <Button type="submit" disabled={!ready}>
-          {state.mode === "edit" ? "저장" : "추가"}
+        <Button type="submit" disabled={pending || !ready}>
+          {pending ? "저장 중…" : state.mode === "edit" ? "저장" : "추가"}
         </Button>
       </DialogFooter>
     </form>
